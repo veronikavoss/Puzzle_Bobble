@@ -31,7 +31,7 @@ class Asset:
     def get_start_screen(self):
         self.start_screen_background=pygame.Surface((320,224))
         self.start_screen_background.blit(self.general_sheet,(0,0),(1,10,320,224))
-        self.start_screen_background=pygame.transform.scale(self.start_screen_background,screen_size)
+        self.start_screen_background=pygame.transform.scale(self.start_screen_background,(320*scale,224*scale))
         self.start_screen_background.set_colorkey((147,187,236))
         
         self.logo=pygame.Surface((192,144))
@@ -52,7 +52,7 @@ class Asset:
             for x in range(3):
                 surface=pygame.Surface((320,224))
                 surface.blit(self.background_1p_sheet,(0,0),(328*x+16,264*y+16,320,224))
-                surface=pygame.transform.scale(surface,screen_size)
+                surface=pygame.transform.scale(surface,(320*scale,224*scale))
                 # surface.set_colorkey((180,253,194))
                 self.background_images.append(surface)
         

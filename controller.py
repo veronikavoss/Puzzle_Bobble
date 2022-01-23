@@ -43,7 +43,7 @@ class Controller:
             if text!='`':
                 self.font_index=ord(text)-33
                 font=self.asset.font_images[self.font_type][self.font_index]
-                self.screen.blit(font,(x*32,32*27))
+                self.screen.blit(font,(x*grid_size,grid_size*27))
     
     def update(self):
         self.set_start_screen_timer()
