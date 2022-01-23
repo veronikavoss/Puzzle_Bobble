@@ -31,6 +31,7 @@ class PuzzleBobble:
             if event.type==pygame.KEYDOWN:
                 if event.key==pygame.K_RETURN:
                     self.controller.credit+=1
+                    self.controller.level+=1
                 if self.controller.start_screen:
                     if event.key==pygame.K_SPACE:
                         self.controller.start_screen=False

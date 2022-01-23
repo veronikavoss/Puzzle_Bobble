@@ -1,5 +1,4 @@
 from setting import *
-from level import *
 
 class StartScreen:
     def __init__(self,screen,asset):

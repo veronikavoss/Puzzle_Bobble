@@ -9,6 +9,7 @@ class Asset:
         
         self.get_font_image()
         self.get_start_screen()
+        self.get_background()
     
     def get_font_image(self):
         self.font_images={'all_font':[],'number':[],'alphabet':[]}
@@ -43,4 +44,36 @@ class Asset:
         self.taito_logo=pygame.transform.scale(self.taito_logo,(112*scale,32*scale))
         self.taito_logo.set_colorkey((147,187,236))
     
-        # 112 32
+    def get_background(self):
+        self.background_images=[]
+        self.floor_images=[]
+        
+        for y in range(3):
+            for x in range(3):
+                surface=pygame.Surface((320,224))
+                surface.blit(self.background_1p_sheet,(0,0),(328*x+16,264*y+16,320,224))
+                surface=pygame.transform.scale(surface,screen_size)
+                # surface.set_colorkey((180,253,194))
+                self.background_images.append(surface)
+        
+        special=pygame.Surface((320,672))
+        special.blit(self.background_1p_sheet,(0,0),(1000,16,320,672))
+        special=pygame.transform.scale(special,(320*scale,672*scale))
+        self.background_images.insert(8,special)
+        
+        for y in range(3):
+            for x in range(3):
+                surface=pygame.Surface((320,8))
+                surface.blit(self.background_1p_sheet,(0,0),(328*x+16,264*y+248,320,8))
+                surface=pygame.transform.scale(surface,(320*scale,8*scale))
+                surface.set_colorkey((180,253,194))
+                self.floor_images.append(surface)
+        
+        special_floor=pygame.Surface((320,8))
+        special_floor.blit(self.background_1p_sheet,(0,0),(1000,696,320,8))
+        special_floor=pygame.transform.scale(special_floor,(320*scale,8*scale))
+        special_floor.set_colorkey((180,253,194))
+        self.floor_images.insert(8,special_floor)
+    
+    # 320,224
+    # 320 672 1000 16
