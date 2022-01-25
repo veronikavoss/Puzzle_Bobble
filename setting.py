@@ -1,12 +1,12 @@
 from turtle import screensize
 import pygame,os
 
-title='Puzzle Bobble'
-scale=3
-screen_size=screen_width,screen_height=320*scale,224*scale # 1280,896
-stage_size=stage_width,stage_height=130*scale,200*scale # 520,800
-grid_size=8*scale
+TITLE='Puzzle Bobble'
+SCALE=3
+SCREEN_SIZE=SCREEN_WIDTH,SCREEN_HEIGHT=320*SCALE,224*SCALE # 1280,896
+STAGE_SIZE=STAGE_WIDTH,STAGE_HEIGHT=130*SCALE,200*SCALE # 520,800
+GRID_CELL_SIZE=8*SCALE
 FPS=60
 
-current_path=os.path.dirname(os.path.abspath(__file__))
-image_path=os.path.join(current_path,'image')
+CURRENT_PATH=os.path.dirname(os.path.abspath(__file__))
+IMAGE_PATH=os.path.join(CURRENT_PATH,'image')

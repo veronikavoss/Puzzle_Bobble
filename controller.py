@@ -1,3 +1,4 @@
+from launcher import Launcher
 from setting import *
 from level import *
 from start_screen import StartScreen
@@ -13,6 +14,9 @@ class Controller:
         self.start_screen_sprite=StartScreen(self.screen,self.asset)
         self.playing_game=False
         
+        # self.launcher_sprite=pygame.sprite.GroupSingle(Launcher(self.asset))
+        self.launcher_sprite=Launcher(self.asset)
+        
         self.font_type='all_font' # all_font, number, alphabet
     
     def set_start_screen_timer(self):
@@ -21,21 +25,20 @@ class Controller:
             self.playing_game=True
     
     def draw_background(self):
-        level=max(self.level//3,0)
+        level=min(self.level//3,9)
         
         if self.level<24 or self.level>26:
             background=self.asset.background_images[level]
             background_rect=background.get_rect()
             floor=self.asset.floor_images[level]
-            floor_rect=floor.get_rect(bottom=screen_height)
+            floor_rect=floor.get_rect(bottom=SCREEN_HEIGHT)
             self.screen.blits([[background,background_rect],[floor,floor_rect]])
         elif 23<self.level<27:
             special_background=self.asset.background_images[level]
             special_background_rect=special_background.get_rect()
             special_floor=self.asset.floor_images[level]
-            special_floor_rect=special_floor.get_rect(bottom=screen_height)
+            special_floor_rect=special_floor.get_rect(bottom=SCREEN_HEIGHT)
             self.screen.blits([[special_background,special_background_rect],[special_floor,special_floor_rect]])
-            
     
     def draw_text(self):
         bottom_text=list(f'`````````````````LEVEL-4`````CREDIT`{self.credit:0>2}``')
@@ -43,10 +46,13 @@ class Controller:
             if text!='`':
                 self.font_index=ord(text)-33
                 font=self.asset.font_images[self.font_type][self.font_index]
-                self.screen.blit(font,(x*grid_size,grid_size*27))
+                self.screen.blit(font,(x*GRID_CELL_SIZE,GRID_CELL_SIZE*27))
     
     def update(self):
-        self.set_start_screen_timer()
+        if self.start_screen:
+            self.set_start_screen_timer()
+        elif not self.start_screen and self.playing_game:
+            self.launcher_sprite.update()
     
     def draw(self):
         if self.start_screen:
@@ -54,6 +60,8 @@ class Controller:
             self.draw_text()
         elif not self.start_screen and self.playing_game:
             self.draw_background()
+            self.launcher_sprite.draw(self.screen)
+            # self.launcher_sprite.sprite.draw_angle_adjuster(self.screen)
             self.draw_text()
         # else:
         #     self.screen.fill('black')

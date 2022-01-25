@@ -9,10 +9,10 @@ class StartScreen:
         self.background_rect=self.background_image.get_rect()
         
         self.logo_image=self.asset.logo
-        self.logo_rect=self.logo_image.get_rect(midtop=(screen_width//2,grid_size))
+        self.logo_rect=self.logo_image.get_rect(midtop=(SCREEN_WIDTH//2,GRID_CELL_SIZE))
         
         self.taito_logo_image=self.asset.taito_logo
-        self.taito_logo_rect=self.taito_logo_image.get_rect(midtop=(screen_width//2,screen_height-grid_size*8))
+        self.taito_logo_rect=self.taito_logo_image.get_rect(midtop=(SCREEN_WIDTH//2,SCREEN_HEIGHT-GRID_CELL_SIZE*8))
         
         self.font_type='all_font' # all_font, number, alphabet
         self.font_index=0
@@ -33,16 +33,16 @@ class StartScreen:
                 self.font_index=ord(text)-33
                 font=self.asset.font_images[self.font_type][self.font_index]
                 if (current_time//600)%2==0:
-                    self.screen.blit(font,(x*grid_size,grid_size*19))
+                    self.screen.blit(font,(x*GRID_CELL_SIZE,GRID_CELL_SIZE*19))
         
         for row,text_data in enumerate(time_text):
             for column,text in enumerate(text_data):
-                x=column*grid_size
-                y=row*grid_size
+                x=column*GRID_CELL_SIZE
+                y=row*GRID_CELL_SIZE
                 if text!='`':
                     self.font_index=ord(text)-33
                     font=self.asset.font_images[self.font_type][self.font_index]
-                    self.screen.blit(font,(x,y+(grid_size*24)))
+                    self.screen.blit(font,(x,y+(GRID_CELL_SIZE*24)))
     
     def draw(self):
         self.screen.blit(self.background_image,self.background_rect)

@@ -1,12 +1,12 @@
+from setting import *
 from asset import Asset
 from controller import Controller
-from setting import *
 
 class PuzzleBobble:
     def __init__(self):
         pygame.init()
-        pygame.display.set_caption(title)
-        self.screen=pygame.display.set_mode(screen_size)
+        pygame.display.set_caption(TITLE)
+        self.screen=pygame.display.set_mode(SCREEN_SIZE)
         self.clock=pygame.time.Clock()
         self.asset=Asset()
         self.running=True
@@ -33,7 +33,7 @@ class PuzzleBobble:
                     self.controller.credit+=1
                     self.controller.level+=1
                 if self.controller.start_screen:
-                    if event.key==pygame.K_SPACE:
+                    if event.key==pygame.K_SPACE or not event.key==pygame.K_RETURN:
                         self.controller.start_screen=False
                         self.controller.playing_game=True
     
