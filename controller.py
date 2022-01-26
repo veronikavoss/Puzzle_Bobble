@@ -1,7 +1,8 @@
-from launcher import Launcher
 from setting import *
-from level import *
 from start_screen import StartScreen
+from launcher import Launcher
+from level import *
+from bubble import Bubble
 
 class Controller:
     def __init__(self,screen,asset):
@@ -14,7 +15,7 @@ class Controller:
         self.start_screen_sprite=StartScreen(self.screen,self.asset)
         self.playing_game=False
         
-        # self.launcher_sprite=pygame.sprite.GroupSingle(Launcher(self.asset))
+        self.levels=Level()
         self.launcher_sprite=Launcher(self.asset)
         
         self.font_type='all_font' # all_font, number, alphabet
@@ -23,6 +24,21 @@ class Controller:
         if self.start_screen_sprite.count_time<=0:
             self.start_screen=False
             self.playing_game=True
+    
+    def next_level(self):
+        bubble_size=16*SCALE
+        for row,data in enumerate(self.levels.levels[f'level_{self.level+1}']):
+            for column,bubble in enumerate(data):
+                
+                if row%2==0:
+                    x=column*bubble_size+STAGE_LEFT
+                    y=row*bubble_size+STAGE_TOP-(bubble_size//8*row)
+                elif row%2!=0:
+                    x=column*bubble_size+(STAGE_LEFT+bubble_size//2)
+                    y=row*bubble_size+STAGE_TOP-(bubble_size//8*row)
+                
+                if bubble!='_':
+                    self.launcher_sprite.bubble_sprite.add(Bubble(self.asset,(x,y),bubble))
     
     def draw_background(self):
         level=min(self.level//3,9)
@@ -61,7 +77,6 @@ class Controller:
         elif not self.start_screen and self.playing_game:
             self.draw_background()
             self.launcher_sprite.draw(self.screen)
-            # self.launcher_sprite.sprite.draw_angle_adjuster(self.screen)
             self.draw_text()
         # else:
         #     self.screen.fill('black')

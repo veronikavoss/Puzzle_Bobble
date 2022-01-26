@@ -1,9 +1,19 @@
 from setting import *
-from balloons import Balloon
+from bubble import Bubble
+from random import choice
 
 class Launcher:
     def __init__(self,asset):
         self.asset=asset
+        
+        self.borders_ceiling_image=self.asset.borders_ceiling_image[0]
+        self.borders_ceiling_image_rect=self.borders_ceiling_image.get_rect(topleft=(GRID_CELL_SIZE*12,GRID_CELL_SIZE*2))
+        
+        self.borders_side_image=self.asset.borders_side_image[0]
+        self.borders_side_image_rect=self.borders_side_image.get_rect(topleft=(GRID_CELL_SIZE*10,GRID_CELL_SIZE*2))
+        
+        self.boundary_image=self.asset.boundary_image
+        self.boundary_image_rect=self.boundary_image.get_rect(topleft=(GRID_CELL_SIZE*12,STAGE_BOTTOM))
         
         self.angle_adjuster_frame_index=0
         self.angle_adjuster_image=self.asset.launcher_images['angle_adjuster'][self.angle_adjuster_frame_index]
@@ -36,36 +46,41 @@ class Launcher:
         self.character_2p_image=self.character_2p_status['character_join'][self.character_2p_frame_index]
         self.character_2p_image_rect=self.character2_image.get_rect(bottomleft=(GRID_CELL_SIZE*32,SCREEN_HEIGHT-GRID_CELL_SIZE))
         
-        self.balloons_pocket_image1=self.asset.launcher_images['balloons_pocket'][0]
-        self.balloons_pocket_image2=self.asset.launcher_images['balloons_pocket'][1]
-        self.balloons_pocket_image_rect=self.balloons_pocket_image1.get_rect(bottomleft=(GRID_CELL_SIZE*10,SCREEN_HEIGHT-GRID_CELL_SIZE))
+        self.bubbles_pocket_image1=self.asset.launcher_images['bubbles_pocket'][0]
+        self.bubbles_pocket_image2=self.asset.launcher_images['bubbles_pocket'][1]
+        self.bubbles_pocket_image_rect=self.bubbles_pocket_image1.get_rect(bottomleft=(GRID_CELL_SIZE*10,SCREEN_HEIGHT-GRID_CELL_SIZE))
         
         self.angle=0
         
-        self.balloon_sprite=pygame.sprite.Group(Balloon(self.asset,(GRID_CELL_SIZE*15,SCREEN_HEIGHT-GRID_CELL_SIZE)))
+        # self.bubble_sprite=pygame.sprite.Group(Bubble(self.asset,(GRID_CELL_SIZE*15,SCREEN_HEIGHT-GRID_CELL_SIZE),choice(list(self.asset.bubbles_image.keys()))))
+        self.bubble_sprite=pygame.sprite.Group()
     
     def set_character_images(self):
         self.character_1p_status={
             'character1_idle':self.asset.launcher_images['character'][0:1],
-            'character1_delay':self.asset.launcher_images['character'][1:3],
+            'character1_delay1':self.asset.launcher_images['character'][0:2],
+            'character1_delay2':self.asset.launcher_images['character'][1:3],
             'character1_load':self.asset.launcher_images['character'][6:9],
             'character1_blowing':self.asset.launcher_images['character'][3:6],
             'character1_hurry_up':self.asset.launcher_images['character'][9:11],
             'character1_clear':self.asset.launcher_images['character'][11:15],
             'character1_die':self.asset.launcher_images['character'][15:23],
             'character2_idle':self.asset.launcher_images['character'][23:24],
-            'character2_delay':self.asset.launcher_images['character'][24:29],
+            'character2_delay1':self.asset.launcher_images['character'][24:27],
+            'character2_delay2':self.asset.launcher_images['character'][27:29],
             'character2_work':self.asset.launcher_images['character'][29:37],
             'character2_clear':self.asset.launcher_images['character'][37:41],
-            'character2_hurry_up':self.asset.launcher_images['character'][41:43],
+            'character2_die':self.asset.launcher_images['character'][41:43],
             'character_join':self.asset.launcher_images['character'][43:53],
             'character_thankyou':self.asset.launcher_images['character'][53:57]}
+        
         self.character_2p_status={
             'character_join':self.asset.launcher_images['character'][100:110],
             'character_thankyou':self.asset.launcher_images['character'][110:114],
             }
     
     def set_key_input(self):
+        # 1.25
         key_input=pygame.key.get_pressed()
         if key_input[pygame.K_LEFT] and self.pointer_frame_index>=-len(self.asset.launcher_images['pointer'])+2:
             self.angle=-1
@@ -131,19 +146,22 @@ class Launcher:
     def update(self):
         self.set_key_input()
         self.animation()
-        self.balloon_sprite.update()
+        self.bubble_sprite.update()
     
     def draw(self,screen):
         screen.blits([
+            [self.borders_ceiling_image,self.borders_ceiling_image_rect],
+            [self.borders_side_image,self.borders_side_image_rect],
+            [self.boundary_image,self.boundary_image_rect],
             [self.angle_adjuster_image,self.angle_adjuster_image_rect],
             [self.controller_image,self.controller_image_rect],
             [self.pointer_image,self.pointer_rect],
             [self.pipe_image,self.pipe_image_rect],
-            [self.balloons_pocket_image1,self.balloons_pocket_image_rect],
+            [self.bubbles_pocket_image1,self.bubbles_pocket_image_rect],
             [self.character1_image,self.character1_image_rect],
             [self.character2_image,self.character2_image_rect],
-            # [self.balloons_pocket_image2,self.balloons_pocket_image_rect],
+            # [self.bubbles_pocket_image2,self.bubbles_pocket_image_rect],
             [self.character_2p_image,self.character_2p_image_rect]
             ])
-        self.balloon_sprite.draw(screen)
-        screen.blit(self.balloons_pocket_image2,self.balloons_pocket_image_rect)
+        self.bubble_sprite.draw(screen)
+        screen.blit(self.bubbles_pocket_image2,self.bubbles_pocket_image_rect)

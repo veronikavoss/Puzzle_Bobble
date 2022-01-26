@@ -5,16 +5,21 @@ class Asset:
         self.general_sheet=pygame.image.load(os.path.join(IMAGE_PATH,'General Sprites.png')).convert_alpha()
         self.background_1p_sheet=pygame.image.load(os.path.join(IMAGE_PATH,'1Player Backgrounds.png')).convert_alpha()
         self.background_2p_sheet=pygame.image.load(os.path.join(IMAGE_PATH,'2Player Backgrounds.png')).convert_alpha()
-        self.borders_sheet=pygame.image.load(os.path.join(IMAGE_PATH,'Borders.png')).convert_alpha()
+        self.borders_sheet=pygame.image.load(os.path.join(IMAGE_PATH,'Borders_fix.png')).convert_alpha()
         
-        self.get_font_image()
+        self.get_font_n_ui_image()
         self.get_start_screen_image()
-        self.get_background_image()
+        self.get_background_n_Borders_image()
         self.get_launcher_image()
-        self.get_balloon_image()
+        self.get_bubble_image()
     
-    def get_font_image(self):
+    def get_font_n_ui_image(self):
         self.font_images={'all_font':[],'number':[],'alphabet':[]}
+        
+        self.round_board=pygame.Surface((128,48))
+        self.round_board.blit(self.general_sheet,(0,0),(290,2178,128,48))
+        self.round_board=pygame.transform.scale(self.round_board,(128*SCALE,48*SCALE))
+        self.round_board.set_colorkey((147,187,236))
         
         for y in range(4):
             for x in range(31):
@@ -46,9 +51,10 @@ class Asset:
         self.taito_logo=pygame.transform.scale(self.taito_logo,(112*SCALE,32*SCALE))
         self.taito_logo.set_colorkey((147,187,236))
     
-    def get_background_image(self):
+    def get_background_n_Borders_image(self):
+        
+        # background image
         self.background_images=[]
-        self.floor_images=[]
         
         for y in range(3):
             for x in range(3):
@@ -63,6 +69,9 @@ class Asset:
         special=pygame.transform.scale(special,(320*SCALE,672*SCALE))
         self.background_images.insert(8,special)
         
+        # floor image
+        self.floor_images=[]
+        
         for y in range(3):
             for x in range(3):
                 surface=pygame.Surface((320,8))
@@ -76,10 +85,46 @@ class Asset:
         special_floor=pygame.transform.scale(special_floor,(320*SCALE,8*SCALE))
         special_floor.set_colorkey((180,253,194))
         self.floor_images.insert(8,special_floor)
+        
+        # boundary image
+        self.boundary_image=pygame.Surface((128,16))
+        self.boundary_image.blit(self.general_sheet,(0,0),(581,2185,128,16))
+        self.boundary_image=pygame.transform.scale(self.boundary_image,(128*SCALE,16*SCALE))
+        self.boundary_image.set_colorkey((147,187,236))
+        
+        # borders image
+        self.borders_side_image=[]
+        self.borders_ceiling_image=[]
+        
+        for y in range(10):
+            surface=pygame.Surface((160,200))
+            surface.blit(self.borders_sheet,(0,0),(1,250*y+10,160,200))
+            surface=pygame.transform.scale(surface,(160*SCALE,200*SCALE))
+            surface.set_colorkey((50,97,168))
+            # surface.set_colorkey((147,187,236))
+            self.borders_side_image.append(surface)
+        
+        for y in range(10):
+            for count in range(2):
+                for x in range(6):
+                    if count==0:
+                        surface=pygame.Surface((128,78))
+                        surface.blit(self.borders_sheet,(0,0),(129*x+162,250*y+10,128,78))
+                        surface=pygame.transform.scale(surface,(128*SCALE,78*SCALE))
+                        # surface.set_colorkey((147,187,236))
+                        surface.set_colorkey((50,97,168))
+                        self.borders_ceiling_image.append(surface)
+                    else:
+                        surface=pygame.Surface((128,162))
+                        surface.blit(self.borders_sheet,(0,0),(129*x+162,250*y+91,128,162))
+                        surface=pygame.transform.scale(surface,(128*SCALE,162*SCALE))
+                        # surface.set_colorkey((147,187,236))
+                        surface.set_colorkey((50,97,168))
+                        self.borders_ceiling_image.append(surface)
     
     def get_launcher_image(self):
-        self.launcher_images={'pointer':[],'angle_adjuster':[],'balloons_pocket':[],'controller':[],'pipe':[],'character':[]}
-        # 2p - balloons_pocket = [2:]3, character = [57:]113
+        self.launcher_images={'pointer':[],'angle_adjuster':[],'bubbles_pocket':[],'controller':[],'pipe':[],'character':[]}
+        # 2p - bubbles_pocket = [2:]3, character = [57:]113
                 
         for y in range(4):
             for x in range(16):
@@ -101,7 +146,7 @@ class Asset:
             surface.blit(self.general_sheet,(0,0),(65*x+781,1813,64,32))
             surface=pygame.transform.scale(surface,(64*SCALE,32*SCALE))
             surface.set_colorkey((147,187,236))
-            self.launcher_images['balloons_pocket'].append(surface)
+            self.launcher_images['bubbles_pocket'].append(surface)
         
         for y in range(2):
             for x in range(4):
@@ -128,11 +173,15 @@ class Asset:
         del self.launcher_images['character'][57]
         del self.launcher_images['character'][114]
     
-    def get_balloon_image(self):
-        self.balloons_image={'blue':[],'yellow':[],'red':[],'green':[],'purple':[],'orange':[],'black':[],'gray':[]}
+    def get_bubble_image(self):
+        self.bubbles_image={'B':[],'Y':[],'R':[],'G':[],'P':[],'O':[],'B':[],'S':[]}
+        self.bubbles_pop_image={'B':[],'Y':[],'R':[],'G':[],'P':[],'O':[],'B':[],'S':[]}
+        self.bubbles_popped_image={'B':[],'Y':[],'R':[],'G':[],'P':[],'O':[],'B':[],'S':[]}
+        self.bubbles_dead_image=[]
+        
         count=0
-        for y,color in enumerate(self.balloons_image.keys()):
-            y=(count//2)
+        for y,color in enumerate(self.bubbles_image.keys()):
+            y=count//2
             for x in range(10):
                 surface=pygame.Surface((16,16))
                 if count%2==0:
@@ -141,8 +190,44 @@ class Asset:
                     surface.blit(self.general_sheet,(0,0),(17*x+555,33*y+1854,16,16))
                 surface=pygame.transform.scale(surface,(16*SCALE,16*SCALE))
                 surface.set_colorkey((147,187,236))
-                self.balloons_image[color].append(surface)
+                self.bubbles_image[color].append(surface)
             count+=1
+        
+        count=0
+        for y,color in enumerate(self.bubbles_image.keys()):
+            y=count//2
+            for x in range(7):
+                surface=pygame.Surface((32,32))
+                if count%2==0:
+                    surface.blit(self.general_sheet,(0,0),(33*x+171,33*y+1846,32,32))
+                else:
+                    surface.blit(self.general_sheet,(0,0),(33*x+725,33*y+1846,32,32))
+                surface=pygame.transform.scale(surface,(32*SCALE,32*SCALE))
+                surface.set_colorkey((147,187,236))
+                self.bubbles_pop_image[color].append(surface)
+            count+=1
+        
+        count=0
+        for y,color in enumerate(self.bubbles_image.keys()):
+            y=count//2
+            for x in range(9):
+                surface=pygame.Surface((16,16))
+                if count%2==0:
+                    surface.blit(self.general_sheet,(0,0),(17*x+402,33*y+1854,16,16))
+                else:
+                    surface.blit(self.general_sheet,(0,0),(17*x+956,33*y+1854,16,16))
+                surface=pygame.transform.scale(surface,(16*SCALE,16*SCALE))
+                surface.set_colorkey((147,187,236))
+                self.bubbles_popped_image[color].append(surface)
+            count+=1
+        
+        for y in range(2):
+            for x in range(11*4):
+                surface=pygame.Surface((16,16))
+                surface.blit(self.general_sheet,(0,0),(17*x+1,17*y+1978,16,16))
+                surface=pygame.transform.scale(surface,(16*SCALE,16*SCALE))
+                surface.set_colorkey((147,187,236))
+                self.bubbles_dead_image.append(surface)
     
     # 320,224
     # 320 672 1000 16
