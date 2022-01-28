@@ -9,7 +9,7 @@ class Controller:
         self.screen=screen
         self.asset=asset
         self.credit=1
-        self.level=0
+        self.level=-1
         
         self.start_screen=True
         self.start_screen_sprite=StartScreen(self.screen,self.asset)
@@ -26,10 +26,10 @@ class Controller:
             self.playing_game=True
     
     def next_level(self):
+        self.level+=1
         bubble_size=16*SCALE
-        for row,data in enumerate(self.levels.levels[f'level_{self.level+1}']):
+        for row,data in enumerate(self.levels.levels[f'level_{self.level+1}']['map']):
             for column,bubble in enumerate(data):
-                
                 if row%2==0:
                     x=column*bubble_size+STAGE_LEFT
                     y=row*bubble_size+STAGE_TOP-(bubble_size//8*row)
@@ -37,8 +37,23 @@ class Controller:
                     x=column*bubble_size+(STAGE_LEFT+bubble_size//2)
                     y=row*bubble_size+STAGE_TOP-(bubble_size//8*row)
                 
+                row_index=row
+                column_index=column
+                
                 if bubble!='_':
                     self.launcher_sprite.bubble_sprite.add(Bubble(self.asset,(x,y),bubble))
+        
+        self.launcher_sprite.load_bubble=Bubble(
+            self.asset,(GRID_CELL_SIZE*19,GRID_CELL_SIZE*23),self.levels.levels[f'level_{self.level+1}']['start'][0],load=True)
+        self.launcher_sprite.next_bubble=Bubble(
+            self.asset,(GRID_CELL_SIZE*15,GRID_CELL_SIZE*25),self.levels.levels[f'level_{self.level+1}']['start'][1])
+        self.launcher_sprite.bubble_sprite.add(self.launcher_sprite.load_bubble,self.launcher_sprite.next_bubble)
+    
+    def check_index(self):
+        mouse_pos=pygame.mouse.get_pos()
+        for bubble in self.launcher_sprite.bubble_sprite:
+            if bubble.rect.collidepoint(mouse_pos):
+                print(bubble)
     
     def draw_background(self):
         level=min(self.level//3,9)
@@ -68,7 +83,8 @@ class Controller:
         if self.start_screen:
             self.set_start_screen_timer()
         elif not self.start_screen and self.playing_game:
-            self.launcher_sprite.update()
+            self.launcher_sprite.update(self.level)
+            self.check_index()
     
     def draw(self):
         if self.start_screen:

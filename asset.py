@@ -14,12 +14,8 @@ class Asset:
         self.get_bubble_image()
     
     def get_font_n_ui_image(self):
+        # font_images
         self.font_images={'all_font':[],'number':[],'alphabet':[]}
-        
-        self.round_board=pygame.Surface((128,48))
-        self.round_board.blit(self.general_sheet,(0,0),(290,2178,128,48))
-        self.round_board=pygame.transform.scale(self.round_board,(128*SCALE,48*SCALE))
-        self.round_board.set_colorkey((147,187,236))
         
         for y in range(4):
             for x in range(31):
@@ -34,6 +30,12 @@ class Asset:
         self.font_images['all_font'].insert(62,self.font_images['all_font'][90])
         self.font_images['number']=self.font_images['all_font'][15:25] # 10
         self.font_images['alphabet']=self.font_images['all_font'][32:58] # 26
+        
+        # round_board_image
+        self.round_board=pygame.Surface((128,48))
+        self.round_board.blit(self.general_sheet,(0,0),(290,2178,128,48))
+        self.round_board=pygame.transform.scale(self.round_board,(128*SCALE,48*SCALE))
+        self.round_board.set_colorkey((147,187,236))
     
     def get_start_screen_image(self):
         self.start_screen_background=pygame.Surface((320,224))
@@ -52,10 +54,8 @@ class Asset:
         self.taito_logo.set_colorkey((147,187,236))
     
     def get_background_n_Borders_image(self):
-        
         # background image
         self.background_images=[]
-        
         for y in range(3):
             for x in range(3):
                 surface=pygame.Surface((320,224))
@@ -71,7 +71,6 @@ class Asset:
         
         # floor image
         self.floor_images=[]
-        
         for y in range(3):
             for x in range(3):
                 surface=pygame.Surface((320,8))
@@ -94,16 +93,15 @@ class Asset:
         
         # borders image
         self.borders_side_image=[]
-        self.borders_ceiling_image=[]
-        
         for y in range(10):
             surface=pygame.Surface((160,200))
             surface.blit(self.borders_sheet,(0,0),(1,250*y+10,160,200))
             surface=pygame.transform.scale(surface,(160*SCALE,200*SCALE))
-            surface.set_colorkey((50,97,168))
             # surface.set_colorkey((147,187,236))
+            surface.set_colorkey((50,97,168))
             self.borders_side_image.append(surface)
         
+        self.borders_ceiling_image=[]
         for y in range(10):
             for count in range(2):
                 for x in range(6):
@@ -123,9 +121,18 @@ class Asset:
                         self.borders_ceiling_image.append(surface)
     
     def get_launcher_image(self):
+        # guide_point_images
+        self.guide_point_images=[]
+        for y in range(2):
+            for x in range(4):
+                surface=pygame.Surface((8,8))
+                surface.blit(self.general_sheet,(0,0),(9*x+1041,9*y+1761,8,8))
+                surface=pygame.transform.scale(surface,(8*SCALE,8*SCALE))
+                surface.set_colorkey((147,187,236))
+                self.guide_point_images.append(surface)
+        
+        # launcher_images
         self.launcher_images={'pointer':[],'angle_adjuster':[],'bubbles_pocket':[],'controller':[],'pipe':[],'character':[]}
-        # 2p - bubbles_pocket = [2:]3, character = [57:]113
-                
         for y in range(4):
             for x in range(16):
                 surface=pygame.Surface((64,64))
@@ -174,9 +181,10 @@ class Asset:
         del self.launcher_images['character'][114]
     
     def get_bubble_image(self):
-        self.bubbles_image={'B':[],'Y':[],'R':[],'G':[],'P':[],'O':[],'B':[],'S':[]}
-        self.bubbles_pop_image={'B':[],'Y':[],'R':[],'G':[],'P':[],'O':[],'B':[],'S':[]}
-        self.bubbles_popped_image={'B':[],'Y':[],'R':[],'G':[],'P':[],'O':[],'B':[],'S':[]}
+        # B=BLUE L=BLACK S=SILVER
+        self.bubbles_image={'B':[],'Y':[],'R':[],'G':[],'P':[],'O':[],'L':[],'S':[]}
+        self.bubbles_pop_image={'B':[],'Y':[],'R':[],'G':[],'P':[],'O':[],'L':[],'S':[]}
+        self.bubbles_popped_image={'B':[],'Y':[],'R':[],'G':[],'P':[],'O':[],'L':[],'S':[]}
         self.bubbles_dead_image=[]
         
         count=0

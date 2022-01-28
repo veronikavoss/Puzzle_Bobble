@@ -1,11 +1,50 @@
+from guide_point import GuidePoint
 from setting import *
 from bubble import Bubble
 from random import choice
+import math
 
 class Launcher:
     def __init__(self,asset):
         self.asset=asset
+        self.get_images()
         
+        self.speed=0
+        self.angle=90
+        self.update_time=0
+        self.index=0
+        
+        self.load_bubble=None
+        self.next_bubble=None
+        
+        self.guide_point_sprite=pygame.sprite.Group()
+        self.bubble_sprite=pygame.sprite.Group()
+    
+    def set_character_images(self):
+        self.character_1p_status={
+            'character1_idle':self.asset.launcher_images['character'][0:1],
+            'character1_delay1':self.asset.launcher_images['character'][0:2],
+            'character1_delay2':self.asset.launcher_images['character'][1:3],
+            'character1_load':self.asset.launcher_images['character'][6:9],
+            'character1_blowing':self.asset.launcher_images['character'][3:6],
+            'character1_hurry_up':self.asset.launcher_images['character'][9:11],
+            'character1_clear':self.asset.launcher_images['character'][11:15],
+            'character1_die':self.asset.launcher_images['character'][15:23],
+            'character2_idle':self.asset.launcher_images['character'][23:24],
+            'character2_delay1':self.asset.launcher_images['character'][24:27],
+            'character2_delay2':self.asset.launcher_images['character'][27:29],
+            'character2_work':self.asset.launcher_images['character'][29:37],
+            'character2_clear':self.asset.launcher_images['character'][37:41],
+            'character2_die':self.asset.launcher_images['character'][41:43],
+            'character_join':self.asset.launcher_images['character'][43:53],
+            'character_thankyou':self.asset.launcher_images['character'][53:57]}
+        
+        self.character_2p_status={
+            'character_join':self.asset.launcher_images['character'][100:110],
+            'character_thankyou':self.asset.launcher_images['character'][110:114],
+            }
+    
+    def get_images(self):
         self.borders_ceiling_image=self.asset.borders_ceiling_image[0]
         self.borders_ceiling_image_rect=self.borders_ceiling_image.get_rect(topleft=(GRID_CELL_SIZE*12,GRID_CELL_SIZE*2))
         
@@ -49,48 +88,50 @@ class Launcher:
         self.bubbles_pocket_image1=self.asset.launcher_images['bubbles_pocket'][0]
         self.bubbles_pocket_image2=self.asset.launcher_images['bubbles_pocket'][1]
         self.bubbles_pocket_image_rect=self.bubbles_pocket_image1.get_rect(bottomleft=(GRID_CELL_SIZE*10,SCREEN_HEIGHT-GRID_CELL_SIZE))
-        
-        self.angle=0
-        
-        # self.bubble_sprite=pygame.sprite.Group(Bubble(self.asset,(GRID_CELL_SIZE*15,SCREEN_HEIGHT-GRID_CELL_SIZE),choice(list(self.asset.bubbles_image.keys()))))
-        self.bubble_sprite=pygame.sprite.Group()
     
-    def set_character_images(self):
-        self.character_1p_status={
-            'character1_idle':self.asset.launcher_images['character'][0:1],
-            'character1_delay1':self.asset.launcher_images['character'][0:2],
-            'character1_delay2':self.asset.launcher_images['character'][1:3],
-            'character1_load':self.asset.launcher_images['character'][6:9],
-            'character1_blowing':self.asset.launcher_images['character'][3:6],
-            'character1_hurry_up':self.asset.launcher_images['character'][9:11],
-            'character1_clear':self.asset.launcher_images['character'][11:15],
-            'character1_die':self.asset.launcher_images['character'][15:23],
-            'character2_idle':self.asset.launcher_images['character'][23:24],
-            'character2_delay1':self.asset.launcher_images['character'][24:27],
-            'character2_delay2':self.asset.launcher_images['character'][27:29],
-            'character2_work':self.asset.launcher_images['character'][29:37],
-            'character2_clear':self.asset.launcher_images['character'][37:41],
-            'character2_die':self.asset.launcher_images['character'][41:43],
-            'character_join':self.asset.launcher_images['character'][43:53],
-            'character_thankyou':self.asset.launcher_images['character'][53:57]}
-        
-        self.character_2p_status={
-            'character_join':self.asset.launcher_images['character'][100:110],
-            'character_thankyou':self.asset.launcher_images['character'][110:114],
-            }
+    def guide_point_cooldown(self):
+        self.update_time=pygame.time.get_ticks()
+        self.index+=1
+        if self.index>=8:
+            self.index=0
+    
+    def set_guide_point(self):
+        current_time=pygame.time.get_ticks()
+        if current_time-self.update_time>=60:
+            self.guide_point_sprite.add(GuidePoint(self.asset,self.index,self.angle))
+            self.guide_point_cooldown()
     
     def set_key_input(self):
-        # 1.25
         key_input=pygame.key.get_pressed()
         if key_input[pygame.K_LEFT] and self.pointer_frame_index>=-len(self.asset.launcher_images['pointer'])+2:
-            self.angle=-1
+            self.speed=-1
         elif key_input[pygame.K_RIGHT] and self.pointer_frame_index<=len(self.asset.launcher_images['pointer'])-2:
-            self.angle=1
+            self.speed=1
         else:
-            self.angle=0
+            self.speed=0
+        if key_input[pygame.K_SPACE]:
+            if self.load_bubble:
+                self.launch_bubble()
+        
+        self.angle+=self.speed*-1.45
+    
+    def launch_bubble(self):
+        self.load_bubble.rect.y-=5
     
     def set_status(self):
         pass
+    
+    def guide_point_collision(self):
+        for point in self.guide_point_sprite:
+            # if point.rect.colliderect(self.borders_ceiling_image_rect):
+                # point.kill()
+            # if point.rect.left<STAGE_LEFT:
+            #     point.dx=point.dx*-1
+                # self.angle=180+self.angle
+            for bubble in self.bubble_sprite:
+                if pygame.sprite.collide_rect(point,bubble):
+                    if not bubble.load:
+                        point.kill()
     
     def animation(self):
         angle_adjuster_animation=self.asset.launcher_images['angle_adjuster']
@@ -101,9 +142,9 @@ class Launcher:
         character2_1p_animation=self.character_1p_status[self.character2_status]
         character_2p_animation=self.character_2p_status['character_join']
         
-        self.angle_adjuster_frame_index+=self.angle
-        self.controller_frame_index+=self.angle
-        self.pointer_frame_index+=self.angle
+        self.angle_adjuster_frame_index+=self.speed
+        self.controller_frame_index+=self.speed
+        self.pointer_frame_index+=self.speed
         flip_pointer_frame_index=self.pointer_frame_index*-1
         self.pipe_frame_index+=0.1
         self.character1_frame_index+=0.1
@@ -143,7 +184,11 @@ class Launcher:
         self.character2_image=character2_1p_animation[int(self.character2_frame_index)]
         self.character_2p_image=character_2p_animation[int(self.character_2p_frame_index)]
     
-    def update(self):
+    def update(self,level):
+        if level==0:
+            self.set_guide_point()
+            self.guide_point_collision()
+            self.guide_point_sprite.update()
         self.set_key_input()
         self.animation()
         self.bubble_sprite.update()
@@ -163,5 +208,8 @@ class Launcher:
             # [self.bubbles_pocket_image2,self.bubbles_pocket_image_rect],
             [self.character_2p_image,self.character_2p_image_rect]
             ])
+        self.guide_point_sprite.draw(screen)
         self.bubble_sprite.draw(screen)
         screen.blit(self.bubbles_pocket_image2,self.bubbles_pocket_image_rect)
+        # print(self.fix_angle)
+        print(self.load_bubble)

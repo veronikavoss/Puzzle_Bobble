@@ -2,10 +2,11 @@ from setting import *
 from random import choice
 
 class Bubble(pygame.sprite.Sprite):
-    def __init__(self,asset,pos,color):
+    def __init__(self,asset,pos,color,load=False):
         super().__init__()
         self.asset=asset
         self.color=color
+        self.load=load
         
         self.ready=False
         self.bubble_status='delay'
@@ -36,7 +37,7 @@ class Bubble(pygame.sprite.Sprite):
             'G':self.asset.bubbles_dead_image[33:43],
             'P':self.asset.bubbles_dead_image[44:54],
             'O':self.asset.bubbles_dead_image[55:65],
-            'B':self.asset.bubbles_dead_image[66:76],
+            'L':self.asset.bubbles_dead_image[66:76],
             'S':self.asset.bubbles_dead_image[77:87]}
         
         bubble_color=self.color
@@ -57,6 +58,8 @@ class Bubble(pygame.sprite.Sprite):
             self.bubble_frame_index=0
         self.image=bubble_animation[int(self.bubble_frame_index)]
     
+    def move(self):
+        self.rect.y-=3
     
     def set_ready(self):
         if self.ready:

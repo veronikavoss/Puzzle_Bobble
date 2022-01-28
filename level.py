@@ -35,15 +35,30 @@ def set_screen_grid():
 class Level:
     def __init__(self):
         self.levels={
-            'level_1':[
+            'level_1':{'map':[
                 list('RRYYBBGG'),
-                list('RRYYBBG_'),
+                list('RRYYBBG'),
                 list('BBGGRRYY'),
-                list('BGGRRYY_'),
+                list('BGGRRYY'),
                 list('________'),
+                list('_______'),
                 list('________'),
+                list('_______'),
                 list('________'),
+                list('_______'),
+                list('________')],
+                       'start':list('RB')},
+            'level_2':{'map':[
+                list('___LL___'),
+                list('___P___'),
+                list('___R____'),
+                list('___G___'),
+                list('___R____'),
+                list('___G___'),
+                list('___B____'),
+                list('___B___'),
                 list('________'),
-                list('________'),
-                list('________'),
-                list('________')]}
+                list('_______'),
+                list('________')],
+                       'start':list('BR')}
+            }
