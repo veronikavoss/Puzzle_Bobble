@@ -1,8 +1,9 @@
 from setting import *
 from start_screen import StartScreen
-from launcher import Launcher
 from level import *
+from launcher import Launcher
 from bubble import Bubble
+from random import choice
 
 class Controller:
     def __init__(self,screen,asset):
@@ -44,16 +45,20 @@ class Controller:
                     self.launcher_sprite.bubble_sprite.add(Bubble(self.asset,(x,y),bubble))
         
         self.launcher_sprite.load_bubble=Bubble(
-            self.asset,(GRID_CELL_SIZE*19,GRID_CELL_SIZE*23),self.levels.levels[f'level_{self.level+1}']['start'][0],load=True)
+            self.asset,(GRID_CELL_SIZE*19,GRID_CELL_SIZE*23),choice(self.levels.levels[f'level_{self.level+1}']['start']),load=True)
+        self.launcher_sprite.load_bubble.set_angle(self.launcher_sprite.angle)
+        
         self.launcher_sprite.next_bubble=Bubble(
-            self.asset,(GRID_CELL_SIZE*15,GRID_CELL_SIZE*25),self.levels.levels[f'level_{self.level+1}']['start'][1])
+            self.asset,(GRID_CELL_SIZE*15,GRID_CELL_SIZE*25),choice(self.levels.levels[f'level_{self.level+1}']['start']))
+        self.launcher_sprite.next_bubble.set_angle(self.launcher_sprite.angle)
+        
         self.launcher_sprite.bubble_sprite.add(self.launcher_sprite.load_bubble,self.launcher_sprite.next_bubble)
     
     def check_index(self):
         mouse_pos=pygame.mouse.get_pos()
         for bubble in self.launcher_sprite.bubble_sprite:
             if bubble.rect.collidepoint(mouse_pos):
-                print(bubble)
+                print(bubble.color)
     
     def draw_background(self):
         level=min(self.level//3,9)
@@ -70,6 +75,7 @@ class Controller:
             special_floor=self.asset.floor_images[level]
             special_floor_rect=special_floor.get_rect(bottom=SCREEN_HEIGHT)
             self.screen.blits([[special_background,special_background_rect],[special_floor,special_floor_rect]])
+            
     
     def draw_text(self):
         bottom_text=list(f'`````````````````LEVEL-4`````CREDIT`{self.credit:0>2}``')
