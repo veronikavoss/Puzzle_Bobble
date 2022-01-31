@@ -115,21 +115,19 @@ class Launcher:
         else:
             self.speed=0
         if key_input[pygame.K_SPACE]:
-            if self.load_bubble.load:
-                self.character1_status='character1_blowing'
-                self.pipe=True
-                self.launch_bubble()
+            self.launch_bubble()
         
         self.angle+=self.speed*-1.45
     
     def launch_bubble(self):
-        if not self.load_bubble.launch:
+        if not self.load_bubble.launched and self.load_bubble.load:
+            self.character1_status='character1_blowing'
+            self.pipe=True
             self.load_bubble.set_angle(self.angle)
-            self.load_bubble.launch=True
-            self.load_bubble.load=False
+            self.load_bubble.launched=True
     
     def loading_bubble(self):
-        self.next_bubble.load=True
+        self.next_bubble.reload=True
     
     def choice_bubble_color(self):
         bubble=choice(self.bubble_sprite.sprites())
@@ -158,7 +156,7 @@ class Launcher:
         for bubble in self.bubble_sprite:
             if pygame.sprite.collide_mask(bubble,self.borders_sprite.sprite):
                 if bubble.rect.top<=self.borders_sprite.sprite.rect.bottom:
-                    bubble.launch=False
+                    bubble.launched=False
                     bubble.kill()
                     self.load_bubble=self.next_bubble
                     self.create_bubble()
@@ -260,4 +258,4 @@ class Launcher:
         self.borders_sprite.draw(screen)
         
         # print(self.load_bubble.load,self.load_bubble)
-        # print(self.character1_status,int(self.character1_frame_index))
+        print(self.next_bubble.rect.topleft,GRID_CELL_SIZE*19)

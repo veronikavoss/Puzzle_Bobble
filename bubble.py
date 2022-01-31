@@ -11,7 +11,8 @@ class Bubble(pygame.sprite.Sprite):
         self.load=load
         self.create=create
         
-        self.launch=False
+        self.launched=False
+        self.reload=False
         self.bubble_status='delay'
         self.bubble_frame_index=0
         self.set_bubbles_image()
@@ -67,7 +68,7 @@ class Bubble(pygame.sprite.Sprite):
         self.rad_angle=math.radians(angle)
     
     def move(self):
-        if self.launch:
+        if self.launched:
             x=self.radius*math.cos(self.rad_angle)
             y=self.radius*math.sin(self.rad_angle)
             
@@ -82,17 +83,27 @@ class Bubble(pygame.sprite.Sprite):
                 self.set_angle(180-self.angle)
     
     def loading(self):
-        if self.load and not self.launch:
-            if self.rect.x<GRID_CELL_SIZE*19+1:
-                self.rect.left+=4
+        # reload
+        if self.reload:
+            self.rect.x+=4
+            self.rect.y-=2
+            if self.rect.x>=GRID_CELL_SIZE*19:
+                self.rect.x=GRID_CELL_SIZE*19
                 # 480 608 128
-            if self.rect.y>GRID_CELL_SIZE*23-1:
-                self.rect.top-=2
+            if self.rect.y<=GRID_CELL_SIZE*23:
+                self.rect.y=GRID_CELL_SIZE*23
                 # 800 736 -64
+        if self.rect.x==GRID_CELL_SIZE*19 and self.rect.y==GRID_CELL_SIZE*23:
+            self.reload=False
+            self.load=True
+        else:
+            self.load=False
         
-        if self.create and self.rect.x<GRID_CELL_SIZE*15+1:
+        # create
+        if self.create and self.rect.x<=GRID_CELL_SIZE*15:
             self.rect.x+=4
             if self.rect.x>=GRID_CELL_SIZE*15:
+                self.rect.x=GRID_CELL_SIZE*15
                 self.create=False
     
     def update(self):
