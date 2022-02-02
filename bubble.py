@@ -18,6 +18,7 @@ class Bubble(pygame.sprite.Sprite):
         self.set_bubbles_image()
         self.image=self.bubbles_status[self.bubble_status][self.bubble_frame_index]
         self.rect=self.image.get_rect(topleft=pos)
+        self.direction=pygame.math.Vector2(0,0)
         self.radius=18
     
     def red_bubble(self,color):
@@ -67,7 +68,7 @@ class Bubble(pygame.sprite.Sprite):
         self.angle=angle
         self.rad_angle=math.radians(angle)
     
-    def move(self):
+    def launch(self):
         if self.launched:
             x=self.radius*math.cos(self.rad_angle)
             y=self.radius*math.sin(self.rad_angle)
@@ -85,12 +86,16 @@ class Bubble(pygame.sprite.Sprite):
     def loading(self):
         # reload
         if self.reload:
-            self.rect.x+=4
-            self.rect.y-=2
+            self.rect.x+=self.direction.x
+            self.rect.y+=self.direction.y
+            self.direction.x=4
+            self.direction.y=-2
             if self.rect.x>=GRID_CELL_SIZE*19:
+                self.direction.x=0
                 self.rect.x=GRID_CELL_SIZE*19
                 # 480 608 128
             if self.rect.y<=GRID_CELL_SIZE*23:
+                self.direction.y=0
                 self.rect.y=GRID_CELL_SIZE*23
                 # 800 736 -64
         if self.rect.x==GRID_CELL_SIZE*19 and self.rect.y==GRID_CELL_SIZE*23:
@@ -101,12 +106,18 @@ class Bubble(pygame.sprite.Sprite):
         
         # create
         if self.create and self.rect.x<=GRID_CELL_SIZE*15:
-            self.rect.x+=4
+            self.rect.x+=self.direction.x
+            self.rect.y+=self.direction.y
+            self.direction.x=4
             if self.rect.x>=GRID_CELL_SIZE*15:
+                self.direction.x=0
                 self.rect.x=GRID_CELL_SIZE*15
                 self.create=False
     
     def update(self):
         self.animation()
-        self.move()
+        self.launch()
         self.loading()
+    
+    def draw(self,screen):
+        screen.blit(self.image,self.rect)

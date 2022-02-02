@@ -134,8 +134,7 @@ class Launcher:
         return bubble.color
     
     def create_bubble(self):
-        self.next_bubble=Bubble(self.asset,(GRID_CELL_SIZE*11,GRID_CELL_SIZE*25),self.choice_bubble_color(),create=True)
-        self.bubble_sprite.add(self.next_bubble)
+        self.next_bubble=Bubble(self.asset,(GRID_CELL_SIZE*12,GRID_CELL_SIZE*25),self.choice_bubble_color(),create=True)
     
     def set_status(self):
         if self.speed!=0:
@@ -153,13 +152,12 @@ class Launcher:
                         point.kill()
     
     def bubbles_collision(self):
-        for bubble in self.bubble_sprite:
-            if pygame.sprite.collide_mask(bubble,self.borders_sprite.sprite):
-                if bubble.rect.top<=self.borders_sprite.sprite.rect.bottom:
-                    bubble.launched=False
-                    bubble.kill()
-                    self.load_bubble=self.next_bubble
-                    self.create_bubble()
+        self.collide_bubble=pygame.sprite.spritecollideany(self.load_bubble,self.bubble_sprite,pygame.sprite.collide_mask)
+        print(self.collide_bubble)
+        if pygame.sprite.collide_mask(self.load_bubble,self.borders_sprite.sprite):
+            if self.load_bubble.rect.top<=self.borders_sprite.sprite.rect.bottom:
+                self.load_bubble=self.next_bubble
+                self.create_bubble()
     
     def animation(self):
         # set_images
@@ -252,10 +250,13 @@ class Launcher:
             ])
         self.guide_point_sprite.draw(screen)
         self.bubble_sprite.draw(screen)
-        screen.blits([
-            [self.bubbles_pocket_image2,self.bubbles_pocket_image_rect],
-            [self.borders_side_image,self.borders_side_image_rect]])
         self.borders_sprite.draw(screen)
+        self.load_bubble.draw(screen)
+        self.next_bubble.draw(screen)
+        screen.blits([
+            [self.borders_side_image,self.borders_side_image_rect],
+            [self.bubbles_pocket_image2,self.bubbles_pocket_image_rect]])
         
         # print(self.load_bubble.load,self.load_bubble)
-        print(self.next_bubble.rect.topleft,GRID_CELL_SIZE*19)
+        # print(self.collide_bubble)
+        

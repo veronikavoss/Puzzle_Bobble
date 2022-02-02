@@ -40,28 +40,26 @@ class Controller:
                 
                 row_index=row
                 column_index=column
-                
+                self.draw_rect=pygame.draw.rect(self.screen,'white',(x,y,64,64),2,3)
                 if bubble!='_':
                     self.launcher_sprite.bubble_sprite.add(Bubble(self.asset,(x,y),bubble))
         
         self.launcher_sprite.load_bubble=Bubble(
             self.asset,(GRID_CELL_SIZE*19,GRID_CELL_SIZE*23),self.launcher_sprite.choice_bubble_color())
-            # self.asset,(GRID_CELL_SIZE*19,GRID_CELL_SIZE*23),self.launcher_sprite.choice_bubble_color(),load=True)
         self.launcher_sprite.load_bubble.set_angle(self.launcher_sprite.angle)
         
         self.launcher_sprite.next_bubble=Bubble(
             self.asset,(GRID_CELL_SIZE*15,GRID_CELL_SIZE*25),self.launcher_sprite.choice_bubble_color())
         self.launcher_sprite.next_bubble.set_angle(self.launcher_sprite.angle)
         
-        self.launcher_sprite.bubble_sprite.add(self.launcher_sprite.load_bubble,self.launcher_sprite.next_bubble)
-        
-        print(self.launcher_sprite.choice_bubble_color())
+        # self.launcher_sprite.bubble_sprite.add(self.launcher_sprite.load_bubble,self.launcher_sprite.next_bubble)
     
     def check_index(self):
         mouse_pos=pygame.mouse.get_pos()
         for bubble in self.launcher_sprite.bubble_sprite:
-            if bubble.rect.collidepoint(mouse_pos):
-                print(bubble.color,bubble.rect.topleft,bubble.load)
+            if self.launcher_sprite.load_bubble.rect.collidepoint(mouse_pos) or bubble.rect.collidepoint(mouse_pos):
+                # print(bubble.color,bubble.rect.topleft,bubble.load,id(bubble),self.launcher_sprite.load_bubble.rect)
+                print(self.launcher_sprite.load_bubble.rect,self.launcher_sprite.load_bubble.color)
     
     def draw_background(self):
         level=min(self.level//3,9)
@@ -91,6 +89,8 @@ class Controller:
         if self.start_screen:
             self.set_start_screen_timer()
         elif not self.start_screen and self.playing_game:
+            self.launcher_sprite.load_bubble.update()
+            self.launcher_sprite.next_bubble.update()
             self.launcher_sprite.update(self.level)
             self.check_index()
     
