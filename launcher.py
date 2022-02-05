@@ -13,7 +13,10 @@ class Launcher:
         self.speed=0
         self.angle=90
         self.update_time=0
+        self.character_update_time=0
         self.index=0
+        self.character1_animation_speed=0.1
+        self.character2_animation_speed=0.1
         
         self.load_bubble=pygame.sprite.GroupSingle()
         self.next_bubble=pygame.sprite.GroupSingle()
@@ -27,8 +30,8 @@ class Launcher:
             'character1_idle':self.asset.launcher_images['character'][0:1],
             'character1_delay1':self.asset.launcher_images['character'][0:2],
             'character1_delay2':self.asset.launcher_images['character'][1:3],
-            'character1_load':self.asset.launcher_images['character'][6:9],
             'character1_blowing':self.asset.launcher_images['character'][3:6],
+            'character1_load':self.asset.launcher_images['character'][6:9],
             'character1_hurry_up':self.asset.launcher_images['character'][9:11],
             'character1_clear':self.asset.launcher_images['character'][11:15],
             'character1_die':self.asset.launcher_images['character'][15:23],
@@ -106,6 +109,15 @@ class Launcher:
             self.guide_point_sprite.add(self.guide_point)
             self.guide_point_cooldown()
     
+    def guide_point_collision(self):
+        for point in self.guide_point_sprite:
+            if pygame.sprite.collide_mask(point,self.borders_sprite.sprite):
+                point.kill()
+            for bubble in self.bubble_sprite:
+                if pygame.sprite.collide_rect(point,bubble):
+                    if not bubble.load:
+                        point.kill()
+    
     def set_key_input(self):
         key_input=pygame.key.get_pressed()
         if key_input[pygame.K_LEFT] and self.pointer_frame_index>=-len(self.asset.launcher_images['pointer'])+5:
@@ -125,11 +137,7 @@ class Launcher:
             self.pipe=True
             self.load_bubble.sprite.set_angle(self.angle)
             self.load_bubble.sprite.launched=True
-            self.loading_bubble()
-            
-    
-    def loading_bubble(self):
-        self.next_bubble.sprite.reload=True
+            self.next_bubble.sprite.reload=True
     
     def choice_bubble_color(self):
         bubble=choice(self.bubble_sprite.sprites())
@@ -138,20 +146,20 @@ class Launcher:
     def create_bubble(self):
         self.next_bubble.add(Bubble(self.asset,(GRID_CELL_SIZE*12,GRID_CELL_SIZE*25),self.choice_bubble_color(),create=True))
     
+    def set_character_delay(self):
+        self.character_update_time=pygame.time.get_ticks()
+        return choice(['character2_delay1','character2_delay2'])
+    
     def set_status(self):
+        current_time=pygame.time.get_ticks()
         if self.speed!=0:
             self.character2_status='character2_work'
-        else:
-            self.character2_status='character2_idle'
-    
-    def guide_point_collision(self):
-        for point in self.guide_point_sprite:
-            if pygame.sprite.collide_mask(point,self.borders_sprite.sprite):
-                point.kill()
-            for bubble in self.bubble_sprite:
-                if pygame.sprite.collide_rect(point,bubble):
-                    if not bubble.load:
-                        point.kill()
+        elif self.character2_status=='character2_idle':
+            if current_time-self.character_update_time>=3000:
+                self.character2_status=self.set_character_delay()
+                self.character2_animation_speed=0.1
+        # else:
+        #     self.character2_status='character2_idle'
     
     def animation(self):
         # set_images
@@ -170,12 +178,14 @@ class Launcher:
         flip_pointer_frame_index=self.pointer_frame_index*-1
         if self.pipe:
             self.pipe_frame_index+=0.2
-        self.character1_frame_index+=0.2
+        self.character1_frame_index+=0.15
+        self.character2_frame_index+=self.character2_animation_speed
         if self.character2_status=='character2_work':
             self.character2_frame_index=self.controller_frame_index
-        else:
-            self.character2_frame_index+=0.1
-        self.character_2p_frame_index+=0.1
+        # elif self.character2_status=='character2_delay1' or self.character2_status=='character2_delay2':
+            # self.character2_frame_index=self.character2_delay_frame_index
+        
+        self.character_2p_frame_index+=0.1 # blue character
         
         if self.angle_adjuster_frame_index>=len(angle_adjuster_animation) or self.angle_adjuster_frame_index<=-len(angle_adjuster_animation):
             self.angle_adjuster_frame_index=0
@@ -185,21 +195,24 @@ class Launcher:
         
         if self.pointer_frame_index>=len(pointer_animation) or self.pointer_frame_index<=-len(pointer_animation):
             self.pointer_frame_index=0
-            
+        
         if self.character1_frame_index>=len(character1_1p_animation):
             self.character1_frame_index=0
             if self.character1_status=='character1_blowing':
-                # self.loading_bubble()
+                # self.next_bubble.sprite.reload=True
                 self.character1_status='character1_load'
             elif self.character1_status=='character1_load':
                 self.character1_status='character1_idle'
-            
+        
         if self.pipe_frame_index>=len(pipe_animation):
             self.pipe_frame_index=0
             self.pipe=False
         
         if self.character2_frame_index>=len(character2_1p_animation) or self.character2_frame_index<=-len(character2_1p_animation):
             self.character2_frame_index=0
+            if self.character2_status=='character2_delay1' or self.character2_status=='character2_delay2':
+                self.set_character_delay()
+                self.character2_status='character2_idle'
         
         if self.character_2p_frame_index>=len(character_2p_animation):
             self.character_2p_frame_index=0
@@ -254,4 +267,4 @@ class Launcher:
         
         # print(self.load_bubble.load,self.load_bubble)
         # print(self.collide_bubble)
-        
+        print(self.character2_status)
