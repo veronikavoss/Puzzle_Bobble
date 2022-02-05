@@ -2,7 +2,7 @@ from setting import *
 from start_screen import StartScreen
 from level import *
 from launcher import Launcher
-from bubble import Bubble
+from bubble import Bubble, BubbleCell
 from random import choice
 
 class Controller:
@@ -17,6 +17,7 @@ class Controller:
         self.playing_game=False
         
         self.levels=Level()
+        self.bubble_cell=pygame.sprite.Group()
         self.launcher_sprite=Launcher(self.asset)
         
         self.font_type='all_font' # all_font, number, alphabet
@@ -28,21 +29,12 @@ class Controller:
     
     def next_level(self):
         self.level+=1
-        bubble_size=16*SCALE
-        for row,data in enumerate(self.levels.levels[f'level_{self.level+1}']['map']):
+        
+        for row,data in enumerate(self.levels.levels[f'level_{self.level+1}']):
             for column,bubble in enumerate(data):
-                if row%2==0:
-                    x=column*bubble_size+STAGE_LEFT
-                    y=row*bubble_size+STAGE_TOP-(bubble_size//8*row)
-                elif row%2!=0:
-                    x=column*bubble_size+(STAGE_LEFT+bubble_size//2)
-                    y=row*bubble_size+STAGE_TOP-(bubble_size//8*row)
-                
-                row_index=row
-                column_index=column
-                self.draw_rect=pygame.draw.rect(self.screen,'white',(x,y,64,64),2,3)
+                self.bubble_cell.add(BubbleCell(self.set_bubble_position(row,column),(row,column)))
                 if bubble!='_':
-                    self.launcher_sprite.bubble_sprite.add(Bubble(self.asset,(x,y),bubble))
+                    self.launcher_sprite.bubble_sprite.add(Bubble(self.asset,self.set_bubble_position(row,column),bubble,index=(row,column)))
         
         self.launcher_sprite.load_bubble=Bubble(
             self.asset,(GRID_CELL_SIZE*19,GRID_CELL_SIZE*23),self.launcher_sprite.choice_bubble_color())
@@ -51,15 +43,52 @@ class Controller:
         self.launcher_sprite.next_bubble=Bubble(
             self.asset,(GRID_CELL_SIZE*15,GRID_CELL_SIZE*25),self.launcher_sprite.choice_bubble_color())
         self.launcher_sprite.next_bubble.set_angle(self.launcher_sprite.angle)
+    
+    def set_bubble_position(self,row,column):
+        if row%2==0:
+            x=column*BUBBLE_WIDTH+STAGE_LEFT
+            y=row*BUBBLE_HEIGHT+STAGE_TOP-(BUBBLE_HEIGHT//8*row)
+        elif row%2!=0:
+            x=column*BUBBLE_WIDTH+(STAGE_LEFT+BUBBLE_WIDTH//2)
+            y=row*BUBBLE_HEIGHT+STAGE_TOP-(BUBBLE_HEIGHT//8*row)
         
-        # self.launcher_sprite.bubble_sprite.add(self.launcher_sprite.load_bubble,self.launcher_sprite.next_bubble)
+        return x,y
+    
+    def get_map_index(self):
+        for cell in self.bubble_cell:
+            if cell.rect.collidepoint(self.launcher_sprite.load_bubble.rect.center):
+                column_index=cell.index[0]
+                row_index=cell.index[1]
+                return column_index,row_index
+    
+    def bubbles_collision(self):
+        load_bubble=self.launcher_sprite.load_bubble
+        
+        collide_bubble=pygame.sprite.spritecollideany(load_bubble,self.launcher_sprite.bubble_sprite,pygame.sprite.collide_mask)
+        if collide_bubble:
+            row_index,column_index=self.get_map_index()
+            self.levels.levels[f'level_{self.level+2}'][row_index][column_index]=load_bubble.color
+            self.launcher_sprite.load_bubble.set_rect(self.set_bubble_position(row_index,column_index))
+            self.launcher_sprite.load_bubble.index=(row_index,column_index)
+            self.launcher_sprite.bubble_sprite.add(self.launcher_sprite.load_bubble)
+            self.launcher_sprite.load_bubble.launched=False
+            self.launcher_sprite.load_bubble=self.launcher_sprite.next_bubble
+            self.launcher_sprite.create_bubble()
+        print(load_bubble.rect,load_bubble.load,load_bubble.index)
+        
+        if pygame.sprite.collide_mask(load_bubble,self.launcher_sprite.borders_sprite.sprite):
+            if load_bubble.rect.top<=self.launcher_sprite.borders_sprite.sprite.rect.bottom:
+                self.launcher_sprite.load_bubble=self.launcher_sprite.next_bubble
+                self.launcher_sprite.create_bubble()
     
     def check_index(self):
         mouse_pos=pygame.mouse.get_pos()
         for bubble in self.launcher_sprite.bubble_sprite:
-            if self.launcher_sprite.load_bubble.rect.collidepoint(mouse_pos) or bubble.rect.collidepoint(mouse_pos):
-                # print(bubble.color,bubble.rect.topleft,bubble.load,id(bubble),self.launcher_sprite.load_bubble.rect)
-                print(self.launcher_sprite.load_bubble.rect,self.launcher_sprite.load_bubble.color)
+            for cell in self.bubble_cell:
+                if bubble.rect.collidepoint(mouse_pos):
+                    print(bubble.rect,bubble.color,bubble.load,bubble.index)
+                # if cell.rect.collidepoint(mouse_pos):
+                #     print(cell.index)
     
     def draw_background(self):
         level=min(self.level//3,9)
@@ -89,9 +118,11 @@ class Controller:
         if self.start_screen:
             self.set_start_screen_timer()
         elif not self.start_screen and self.playing_game:
-            self.launcher_sprite.load_bubble.update()
+            if self.launcher_sprite.load_bubble:
+                self.launcher_sprite.load_bubble.update()
             self.launcher_sprite.next_bubble.update()
             self.launcher_sprite.update(self.level)
+            self.bubbles_collision()
             self.check_index()
     
     def draw(self):
@@ -100,6 +131,7 @@ class Controller:
             self.draw_text()
         elif not self.start_screen and self.playing_game:
             self.draw_background()
+            self.bubble_cell.draw(self.screen)
             self.launcher_sprite.draw(self.screen)
             self.draw_text()
         # else:

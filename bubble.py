@@ -4,12 +4,13 @@ from random import choice
 import math
 
 class Bubble(pygame.sprite.Sprite):
-    def __init__(self,asset,pos,color,load=False,create=False):
+    def __init__(self,asset,pos,color,load=False,create=False,index=None):
         super().__init__()
         self.asset=asset
         self.color=color
         self.load=load
         self.create=create
+        self.index=index
         
         self.launched=False
         self.reload=False
@@ -114,6 +115,9 @@ class Bubble(pygame.sprite.Sprite):
                 self.rect.x=GRID_CELL_SIZE*15
                 self.create=False
     
+    def set_rect(self,topleft):
+        self.rect=self.image.get_rect(topleft=topleft)
+    
     def update(self):
         self.animation()
         self.launch()
@@ -121,3 +125,11 @@ class Bubble(pygame.sprite.Sprite):
     
     def draw(self,screen):
         screen.blit(self.image,self.rect)
+
+class BubbleCell(pygame.sprite.Sprite):
+    def __init__(self,topleft,index):
+        super().__init__()
+        self.index=index
+        self.image=pygame.Surface((BUBBLE_SIZE),pygame.SRCALPHA)
+        self.image.fill((255,255,255,100))
+        self.rect=self.image.get_rect(topleft=topleft)

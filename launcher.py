@@ -151,14 +151,6 @@ class Launcher:
                     if not bubble.load:
                         point.kill()
     
-    def bubbles_collision(self):
-        self.collide_bubble=pygame.sprite.spritecollideany(self.load_bubble,self.bubble_sprite,pygame.sprite.collide_mask)
-        print(self.collide_bubble)
-        if pygame.sprite.collide_mask(self.load_bubble,self.borders_sprite.sprite):
-            if self.load_bubble.rect.top<=self.borders_sprite.sprite.rect.bottom:
-                self.load_bubble=self.next_bubble
-                self.create_bubble()
-    
     def animation(self):
         # set_images
         angle_adjuster_animation=self.asset.launcher_images['angle_adjuster']
@@ -234,7 +226,6 @@ class Launcher:
         self.set_status()
         self.animation()
         self.bubble_sprite.update()
-        self.bubbles_collision()
     
     def draw(self,screen):
         screen.blits([
@@ -251,7 +242,8 @@ class Launcher:
         self.guide_point_sprite.draw(screen)
         self.bubble_sprite.draw(screen)
         self.borders_sprite.draw(screen)
-        self.load_bubble.draw(screen)
+        if self.load_bubble:
+            self.load_bubble.draw(screen)
         self.next_bubble.draw(screen)
         screen.blits([
             [self.borders_side_image,self.borders_side_image_rect],
