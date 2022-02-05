@@ -109,7 +109,7 @@ class Bubble(pygame.sprite.Sprite):
         if self.create and self.rect.x<=GRID_CELL_SIZE*15:
             self.rect.x+=self.direction.x
             self.rect.y+=self.direction.y
-            self.direction.x=4
+            self.direction.x=8
             if self.rect.x>=GRID_CELL_SIZE*15:
                 self.direction.x=0
                 self.rect.x=GRID_CELL_SIZE*15
@@ -122,9 +122,6 @@ class Bubble(pygame.sprite.Sprite):
         self.animation()
         self.launch()
         self.loading()
-    
-    def draw(self,screen):
-        screen.blit(self.image,self.rect)
 
 class BubbleCell(pygame.sprite.Sprite):
     def __init__(self,topleft,index):

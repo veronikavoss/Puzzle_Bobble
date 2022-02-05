@@ -15,8 +15,8 @@ class Launcher:
         self.update_time=0
         self.index=0
         
-        self.load_bubble=None
-        self.next_bubble=None
+        self.load_bubble=pygame.sprite.GroupSingle()
+        self.next_bubble=pygame.sprite.GroupSingle()
         
         self.guide_point_sprite=pygame.sprite.Group()
         self.bubble_sprite=pygame.sprite.Group()
@@ -120,21 +120,23 @@ class Launcher:
         self.angle+=self.speed*-1.45
     
     def launch_bubble(self):
-        if not self.load_bubble.launched and self.load_bubble.load:
+        if not self.load_bubble.sprite.launched and self.load_bubble.sprite.load:
             self.character1_status='character1_blowing'
             self.pipe=True
-            self.load_bubble.set_angle(self.angle)
-            self.load_bubble.launched=True
+            self.load_bubble.sprite.set_angle(self.angle)
+            self.load_bubble.sprite.launched=True
+            self.loading_bubble()
+            
     
     def loading_bubble(self):
-        self.next_bubble.reload=True
+        self.next_bubble.sprite.reload=True
     
     def choice_bubble_color(self):
         bubble=choice(self.bubble_sprite.sprites())
         return bubble.color
     
     def create_bubble(self):
-        self.next_bubble=Bubble(self.asset,(GRID_CELL_SIZE*12,GRID_CELL_SIZE*25),self.choice_bubble_color(),create=True)
+        self.next_bubble.add(Bubble(self.asset,(GRID_CELL_SIZE*12,GRID_CELL_SIZE*25),self.choice_bubble_color(),create=True))
     
     def set_status(self):
         if self.speed!=0:
@@ -168,7 +170,7 @@ class Launcher:
         flip_pointer_frame_index=self.pointer_frame_index*-1
         if self.pipe:
             self.pipe_frame_index+=0.2
-        self.character1_frame_index+=0.1
+        self.character1_frame_index+=0.2
         if self.character2_status=='character2_work':
             self.character2_frame_index=self.controller_frame_index
         else:
@@ -187,7 +189,7 @@ class Launcher:
         if self.character1_frame_index>=len(character1_1p_animation):
             self.character1_frame_index=0
             if self.character1_status=='character1_blowing':
-                self.loading_bubble()
+                # self.loading_bubble()
                 self.character1_status='character1_load'
             elif self.character1_status=='character1_load':
                 self.character1_status='character1_idle'
@@ -242,9 +244,10 @@ class Launcher:
         self.guide_point_sprite.draw(screen)
         self.bubble_sprite.draw(screen)
         self.borders_sprite.draw(screen)
-        if self.load_bubble:
+        if self.load_bubble.sprite:
             self.load_bubble.draw(screen)
-        self.next_bubble.draw(screen)
+        if self.next_bubble:
+            self.next_bubble.draw(screen)
         screen.blits([
             [self.borders_side_image,self.borders_side_image_rect],
             [self.bubbles_pocket_image2,self.bubbles_pocket_image_rect]])
