@@ -13,7 +13,8 @@ class Launcher:
         self.speed=0
         self.angle=90
         self.update_time=0
-        self.character_update_time=0
+        self.character1_update_time=0
+        self.character2_update_time=0
         self.index=0
         self.character1_animation_speed=0.1
         self.character2_animation_speed=0.1
@@ -30,7 +31,7 @@ class Launcher:
             'character1_idle':self.asset.launcher_images['character'][0:1],
             'character1_delay1':self.asset.launcher_images['character'][0:2],
             'character1_delay2':self.asset.launcher_images['character'][1:3],
-            'character1_blowing':self.asset.launcher_images['character'][3:6],
+            'character1_blowing':self.asset.launcher_images['character'][3:9],
             'character1_load':self.asset.launcher_images['character'][6:9],
             'character1_hurry_up':self.asset.launcher_images['character'][9:11],
             'character1_clear':self.asset.launcher_images['character'][11:15],
@@ -132,8 +133,8 @@ class Launcher:
         self.angle+=self.speed*-1.45
     
     def launch_bubble(self):
-        if not self.load_bubble.sprite.launched and self.load_bubble.sprite.load:
-            self.character1_status='character1_blowing'
+        if not self.load_bubble.sprite.launched and self.load_bubble.sprite.load and self.character1_status=='character1_idle':
+            # self.character1_status='character1_blowing'
             self.pipe=True
             self.load_bubble.sprite.set_angle(self.angle)
             self.load_bubble.sprite.launched=True
@@ -146,20 +147,43 @@ class Launcher:
     def create_bubble(self):
         self.next_bubble.add(Bubble(self.asset,(GRID_CELL_SIZE*12,GRID_CELL_SIZE*25),self.choice_bubble_color(),create=True))
     
-    def set_character_delay(self):
-        self.character_update_time=pygame.time.get_ticks()
+    def set_character1_delay(self):
+        self.character1_update_time=pygame.time.get_ticks()
+        return choice(['character1_delay1','character1_delay2'])
+    
+    def set_character2_delay(self):
+        self.character2_update_time=pygame.time.get_ticks()
         return choice(['character2_delay1','character2_delay2'])
     
-    def set_status(self):
+    def character1_delay(self):
         current_time=pygame.time.get_ticks()
+        if current_time-self.character1_update_time>=3000:
+            self.character1_status=self.set_character1_delay()
+        print(current_time-self.character1_update_time)
+    
+    def character2_delay(self):
+        current_time=pygame.time.get_ticks()
+        if current_time-self.character2_update_time>=3000:
+            self.character2_status=self.set_character2_delay()
+        print(current_time-self.character2_update_time)
+    
+    def set_status(self):
+        if self.load_bubble.sprite.launched and self.load_bubble.sprite.load:
+            self.character1_status='character1_blowing'
+            self.character1_animation_speed=0.15
+        elif not self.load_bubble.sprite.launched:
+            self.character1_status='character1_idle'
+            self.character1_delay()
+        
         if self.speed!=0:
             self.character2_status='character2_work'
-        elif self.character2_status=='character2_idle':
-            if current_time-self.character_update_time>=3000:
-                self.character2_status=self.set_character_delay()
+            self.set_character2_delay()
+        else:
+            if self.character2_status=='character2_delay1' or self.character2_status=='character2_delay2':
                 self.character2_animation_speed=0.1
-        # else:
-        #     self.character2_status='character2_idle'
+            else:
+                self.character2_status='character2_idle'
+                self.character2_delay()
     
     def animation(self):
         # set_images
@@ -171,22 +195,21 @@ class Launcher:
         character2_1p_animation=self.character_1p_status[self.character2_status]
         character_2p_animation=self.character_2p_status['character_join']
         
-        # set_frame_index
+        # set_frame_index_speed
         self.angle_adjuster_frame_index+=self.speed*0.5
         self.controller_frame_index+=self.speed*0.5
         self.pointer_frame_index+=self.speed
         flip_pointer_frame_index=self.pointer_frame_index*-1
         if self.pipe:
             self.pipe_frame_index+=0.2
-        self.character1_frame_index+=0.15
+        self.character1_frame_index+=self.character1_animation_speed
         self.character2_frame_index+=self.character2_animation_speed
         if self.character2_status=='character2_work':
             self.character2_frame_index=self.controller_frame_index
-        # elif self.character2_status=='character2_delay1' or self.character2_status=='character2_delay2':
-            # self.character2_frame_index=self.character2_delay_frame_index
         
-        self.character_2p_frame_index+=0.1 # blue character
+        self.character_2p_frame_index+=0.1 # 2p blue character
         
+        # set_after_maximum_frame_index
         if self.angle_adjuster_frame_index>=len(angle_adjuster_animation) or self.angle_adjuster_frame_index<=-len(angle_adjuster_animation):
             self.angle_adjuster_frame_index=0
         
@@ -199,10 +222,12 @@ class Launcher:
         if self.character1_frame_index>=len(character1_1p_animation):
             self.character1_frame_index=0
             if self.character1_status=='character1_blowing':
-                # self.next_bubble.sprite.reload=True
-                self.character1_status='character1_load'
-            elif self.character1_status=='character1_load':
                 self.character1_status='character1_idle'
+                # self.next_bubble.sprite.reload=True
+            #     self.character1_status='character1_load'
+            # elif self.character1_status=='character1_load':
+            #     self.character1_status='character1_idle'
+                self.character1_delay()
         
         if self.pipe_frame_index>=len(pipe_animation):
             self.pipe_frame_index=0
@@ -211,8 +236,8 @@ class Launcher:
         if self.character2_frame_index>=len(character2_1p_animation) or self.character2_frame_index<=-len(character2_1p_animation):
             self.character2_frame_index=0
             if self.character2_status=='character2_delay1' or self.character2_status=='character2_delay2':
-                self.set_character_delay()
                 self.character2_status='character2_idle'
+                self.character2_delay()
         
         if self.character_2p_frame_index>=len(character_2p_animation):
             self.character_2p_frame_index=0
@@ -238,6 +263,7 @@ class Launcher:
             self.guide_point_collision()
             self.guide_point_sprite.update()
         self.set_key_input()
+        # self.character_delay()
         self.set_status()
         self.animation()
         self.bubble_sprite.update()
@@ -267,4 +293,4 @@ class Launcher:
         
         # print(self.load_bubble.load,self.load_bubble)
         # print(self.collide_bubble)
-        print(self.character2_status)
+        print(self.character1_status)

@@ -52,6 +52,15 @@ class Asset:
         self.taito_logo.blit(self.general_sheet,(0,0),(17,3126,112,32))
         self.taito_logo=pygame.transform.scale(self.taito_logo,(112*SCALE,32*SCALE))
         self.taito_logo.set_colorkey((147,187,236))
+        
+        self.start_screen_characters={'green':[],'blue':[]}
+        for y,color in enumerate(self.start_screen_characters.keys()):
+            for x in range(21):
+                surface=pygame.Surface((48,48))
+                surface.blit(self.general_sheet,(0,0),(49*x+1,49*y+364,48,48))
+                surface=pygame.transform.scale(surface,(48*SCALE,48*SCALE))
+                surface.set_colorkey((147,187,236))
+                self.start_screen_characters[color].append(surface)
     
     def get_background_n_Borders_image(self):
         # background image

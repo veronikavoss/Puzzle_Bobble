@@ -21,7 +21,7 @@ class PuzzleBobble:
             self.clock.tick(FPS)
             self.event()
             self.update()
-            self.draw()
+            self.draw()       
             pygame.display.update()
     
     def event(self):

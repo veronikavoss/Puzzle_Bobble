@@ -26,6 +26,7 @@ class Controller:
         if self.start_screen_sprite.count_time<=0:
             self.start_screen=False
             self.playing_game=True
+            self.next_level()
     
     def next_level(self):
         self.level+=1
@@ -62,10 +63,12 @@ class Controller:
     def bubbles_collision(self):
         load_bubble=self.launcher_sprite.load_bubble.sprite
         
-        collide_bubble=pygame.sprite.spritecollideany(load_bubble,self.launcher_sprite.bubble_sprite,pygame.sprite.collide_mask)
-        if collide_bubble:
+        bubble_n_bubble_collide=pygame.sprite.spritecollideany(load_bubble,self.launcher_sprite.bubble_sprite,pygame.sprite.collide_mask)
+        ceiling_collide_bubble=pygame.sprite.spritecollideany(load_bubble,self.launcher_sprite.borders_sprite,pygame.sprite.collide_mask)
+        
+        if bubble_n_bubble_collide or ceiling_collide_bubble:
             row_index,column_index=self.get_map_index()
-            self.levels.levels[f'level_{self.level+2}'][row_index][column_index]=load_bubble.color
+            self.levels.levels[f'level_{self.level+1}'][row_index][column_index]=load_bubble.color
             self.launcher_sprite.load_bubble.sprite.set_rect(self.set_bubble_position(row_index,column_index))
             self.launcher_sprite.load_bubble.sprite.index=(row_index,column_index)
             self.launcher_sprite.bubble_sprite.add(self.launcher_sprite.load_bubble.sprite)
@@ -117,12 +120,13 @@ class Controller:
     
     def update(self):
         if self.start_screen:
+            self.start_screen_sprite.update()
             self.set_start_screen_timer()
         elif not self.start_screen and self.playing_game:
+            self.launcher_sprite.update(self.level)
             if self.launcher_sprite.load_bubble.sprite:
                 self.launcher_sprite.load_bubble.sprite.update()
             self.launcher_sprite.next_bubble.update()
-            self.launcher_sprite.update(self.level)
             self.bubbles_collision()
             self.check_index()
     

@@ -14,10 +14,48 @@ class StartScreen:
         self.taito_logo_image=self.asset.taito_logo
         self.taito_logo_rect=self.taito_logo_image.get_rect(midtop=(SCREEN_WIDTH//2,SCREEN_HEIGHT-GRID_CELL_SIZE*8))
         
+        self.get_character_image()
+        
         self.font_type='all_font' # all_font, number, alphabet
         self.font_index=0
         self.count_time=30
         self.timer_update=pygame.time.get_ticks()
+    
+    def get_character_image(self):
+        self.character_images=self.asset.start_screen_characters
+        
+        self.character1_wink_image=[
+            pygame.transform.flip(self.character_images['green'][0],True,False),
+            *self.character_images['green'][16:19]
+            ]
+        self.character2_jump_image=[self.character_images['blue'][0],*self.character_images['blue'][13:15]]
+        print(self.character1_wink_image)
+        print(self.character2_jump_image)
+        self.character1_frame_index=0
+        self.character2_frame_index=0
+        
+        self.character1_image=self.character1_wink_image[self.character1_frame_index]
+        # self.character1_image=pygame.transform.flip(self.character1_image,True,False)
+        self.character1_image_rect=self.character1_image.get_rect(topleft=(GRID_CELL_SIZE*3,GRID_CELL_SIZE*17))
+        
+        self.character2_image=self.character2_jump_image[self.character2_frame_index]
+        self.character2_image_rect=self.character2_image.get_rect(topright=(SCREEN_WIDTH-GRID_CELL_SIZE*3,GRID_CELL_SIZE*17))
+    
+    def animation(self):
+        character1_animation=self.character1_wink_image
+        character2_animation=self.character2_jump_image
+        
+        self.character1_frame_index+=0.05
+        self.character2_frame_index+=0.05
+        
+        if self.character1_frame_index>=len(character1_animation):
+            self.character1_frame_index=0
+        
+        if self.character2_frame_index>=len(character2_animation):
+            self.character2_frame_index=0
+        
+        self.character1_image=character1_animation[int(self.character1_frame_index)]
+        self.character2_image=character2_animation[int(self.character2_frame_index)]
     
     def draw_text(self):
         current_time=pygame.time.get_ticks()
@@ -44,8 +82,15 @@ class StartScreen:
                     font=self.asset.font_images[self.font_type][self.font_index]
                     self.screen.blit(font,(x,y+(GRID_CELL_SIZE*24)))
     
+    def update(self):
+        self.animation()
+    
     def draw(self):
-        self.screen.blit(self.background_image,self.background_rect)
-        self.screen.blit(self.logo_image,self.logo_rect)
-        self.screen.blit(self.taito_logo_image,self.taito_logo_rect)
+        self.screen.blits([
+            [self.background_image,self.background_rect],
+            [self.logo_image,self.logo_rect],
+            [self.taito_logo_image,self.taito_logo_rect],
+            [self.character1_image,self.character1_image_rect],
+            [self.character2_image,self.character2_image_rect]
+            ])
         self.draw_text()
