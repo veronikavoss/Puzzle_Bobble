@@ -141,7 +141,7 @@ class Asset:
                 self.guide_point_images.append(surface)
         
         # launcher_images
-        self.launcher_images={'pointer':[],'angle_adjuster':[],'bubbles_pocket':[],'controller':[],'pipe':[],'character':[]}
+        self.launcher_images={'pointer':[],'angle_adjuster':[],'bubbles_pocket':[],'controller':[],'pipe':[],'character':[],'hurry_up':[]}
         for y in range(4):
             for x in range(16):
                 surface=pygame.Surface((64,64))
@@ -188,6 +188,13 @@ class Asset:
                 self.launcher_images['character'].append(surface)
         del self.launcher_images['character'][57]
         del self.launcher_images['character'][114]
+        
+        for x in range(7):
+            surface=pygame.Surface((32,32))
+            surface.blit(self.general_sheet,(0,0),(33*x+664,2144,32,32))
+            surface=pygame.transform.scale(surface,(32*SCALE,32*SCALE))
+            surface.set_colorkey((147,187,236))
+            self.launcher_images['hurry_up'].append(surface)
     
     def get_bubble_image(self):
         # B=BLUE L=BLACK S=SILVER

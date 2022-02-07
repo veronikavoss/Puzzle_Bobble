@@ -1,6 +1,9 @@
-import math
+#%%
+def fac(num):
+    if num>1:
+        return num*fac(num-1)
+    else:
+        return 1
 
-print(math.radians(170))
-
-a,b=(5,6)
-print(a,b)
+print(fac(5))
+#%%

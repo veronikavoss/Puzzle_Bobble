@@ -26,11 +26,9 @@ class StartScreen:
         
         self.character1_wink_image=[
             pygame.transform.flip(self.character_images['green'][0],True,False),
-            *self.character_images['green'][16:19]
+            *self.character_images['green'][17:19]
             ]
         self.character2_jump_image=[self.character_images['blue'][0],*self.character_images['blue'][13:15]]
-        print(self.character1_wink_image)
-        print(self.character2_jump_image)
         self.character1_frame_index=0
         self.character2_frame_index=0
         

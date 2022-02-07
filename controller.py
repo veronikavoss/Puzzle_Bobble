@@ -18,7 +18,6 @@ class Controller:
         
         self.levels=Level()
         self.bubble_cell=pygame.sprite.Group()
-        self.launcher_sprite=Launcher(self.asset)
         
         self.font_type='all_font' # all_font, number, alphabet
     
@@ -29,6 +28,7 @@ class Controller:
             self.next_level()
     
     def next_level(self):
+        self.launcher_sprite=Launcher(self.asset)
         self.level+=1
         
         for row,data in enumerate(self.levels.levels[f'level_{self.level+1}']):

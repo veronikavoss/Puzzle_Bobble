@@ -13,8 +13,9 @@ class Launcher:
         self.speed=0
         self.angle=90
         self.update_time=0
-        self.character1_update_time=0
-        self.character2_update_time=0
+        self.character1_update_time=pygame.time.get_ticks()
+        self.character2_update_time=pygame.time.get_ticks()
+        self.hurry_up_update_time=pygame.time.get_ticks()
         self.index=0
         self.character1_animation_speed=0.1
         self.character2_animation_speed=0.1
@@ -29,8 +30,8 @@ class Launcher:
     def set_character_images(self):
         self.character_1p_status={
             'character1_idle':self.asset.launcher_images['character'][0:1],
-            'character1_delay1':self.asset.launcher_images['character'][0:2],
-            'character1_delay2':self.asset.launcher_images['character'][1:3],
+            'character1_delay1':[*self.asset.launcher_images['character'][0:2],*self.asset.launcher_images['character'][0:2]],
+            'character1_delay2':[*self.asset.launcher_images['character'][1:3],*self.asset.launcher_images['character'][1:3]],
             'character1_blowing':self.asset.launcher_images['character'][3:9],
             'character1_load':self.asset.launcher_images['character'][6:9],
             'character1_hurry_up':self.asset.launcher_images['character'][9:11],
@@ -38,7 +39,7 @@ class Launcher:
             'character1_die':self.asset.launcher_images['character'][15:23],
             'character2_idle':self.asset.launcher_images['character'][23:24],
             'character2_delay1':self.asset.launcher_images['character'][24:27],
-            'character2_delay2':self.asset.launcher_images['character'][27:29],
+            'character2_delay2':[*self.asset.launcher_images['character'][27:29],*self.asset.launcher_images['character'][27:29]],
             'character2_work':self.asset.launcher_images['character'][29:37],
             'character2_clear':self.asset.launcher_images['character'][37:41],
             'character2_die':self.asset.launcher_images['character'][41:43],
@@ -90,11 +91,15 @@ class Launcher:
         self.bubbles_pocket_image2=self.asset.launcher_images['bubbles_pocket'][1]
         self.bubbles_pocket_image_rect=self.bubbles_pocket_image1.get_rect(bottomleft=(GRID_CELL_SIZE*10,SCREEN_HEIGHT-GRID_CELL_SIZE))
         
-        # self.borders_ceiling_image=self.asset.borders_ceiling_image[0]
-        # self.borders_ceiling_image_rect=self.borders_ceiling_image.get_rect(topleft=(GRID_CELL_SIZE*12,GRID_CELL_SIZE*2))
-        
         self.borders_side_image=self.asset.borders_side_image[0]
         self.borders_side_image_rect=self.borders_side_image.get_rect(topleft=(GRID_CELL_SIZE*10,GRID_CELL_SIZE*2))
+        
+        hurry_up_images=self.asset.launcher_images['hurry_up']
+        for i in range(2,11,2):
+            hurry_up_images.insert(i,self.asset.launcher_images['hurry_up'][0])
+        self.hurry_up_countdown_frame_index=0
+        self.hurry_up_countdown_image=hurry_up_images[self.hurry_up_countdown_frame_index]
+        self.hurry_up_countdown_image_rect=self.hurry_up_countdown_image.get_rect(bottomleft=(GRID_CELL_SIZE*11.5,SCREEN_HEIGHT-GRID_CELL_SIZE*2))
     
     def guide_point_cooldown(self):
         self.update_time=pygame.time.get_ticks()
@@ -103,8 +108,7 @@ class Launcher:
             self.index=0
     
     def set_guide_point(self):
-        current_time=pygame.time.get_ticks()
-        if current_time-self.update_time>=60:
+        if self.current_time-self.update_time>=60:
             self.guide_point=GuidePoint(self.asset,self.index)
             self.guide_point.set_angle(self.angle)
             self.guide_point_sprite.add(self.guide_point)
@@ -133,8 +137,7 @@ class Launcher:
         self.angle+=self.speed*-1.45
     
     def launch_bubble(self):
-        if not self.load_bubble.sprite.launched and self.load_bubble.sprite.load and self.character1_status=='character1_idle':
-            # self.character1_status='character1_blowing'
+        if not self.load_bubble.sprite.launched and self.load_bubble.sprite.load and not self.character1_status=='character1_blowing':
             self.pipe=True
             self.load_bubble.sprite.set_angle(self.angle)
             self.load_bubble.sprite.launched=True
@@ -147,33 +150,37 @@ class Launcher:
     def create_bubble(self):
         self.next_bubble.add(Bubble(self.asset,(GRID_CELL_SIZE*12,GRID_CELL_SIZE*25),self.choice_bubble_color(),create=True))
     
-    def set_character1_delay(self):
+    def character1_delay_time_update(self):
         self.character1_update_time=pygame.time.get_ticks()
-        return choice(['character1_delay1','character1_delay2'])
+    
+    def set_character1_delay_animation(self):
+        if (self.current_time-self.character1_update_time)//100==30:
+            self.character1_status=choice(['character1_delay1','character1_delay2'])
+        elif (self.current_time-self.hurry_up_update_time)//100==50:
+            self.character1_status=self.hurry_up_countdown()
+    
+    def hurry_up_countdown(self):
+        self.hurry_up_update_time=pygame.time.get_ticks()
+        return 'character1_hurry_up'
     
     def set_character2_delay(self):
         self.character2_update_time=pygame.time.get_ticks()
         return choice(['character2_delay1','character2_delay2'])
     
-    def character1_delay(self):
-        current_time=pygame.time.get_ticks()
-        if current_time-self.character1_update_time>=3000:
-            self.character1_status=self.set_character1_delay()
-        print(current_time-self.character1_update_time)
-    
     def character2_delay(self):
-        current_time=pygame.time.get_ticks()
-        if current_time-self.character2_update_time>=3000:
+        if (self.current_time-self.character2_update_time)//100>=30:
             self.character2_status=self.set_character2_delay()
-        print(current_time-self.character2_update_time)
     
     def set_status(self):
         if self.load_bubble.sprite.launched and self.load_bubble.sprite.load:
             self.character1_status='character1_blowing'
             self.character1_animation_speed=0.15
-        elif not self.load_bubble.sprite.launched:
-            self.character1_status='character1_idle'
-            self.character1_delay()
+        elif not self.character1_status=='character1_delay1' or not self.character1_status=='character1_delay2':
+            if self.character1_status=='character1_idle':
+                self.character1_animation_speed=0.1
+                self.set_character1_delay_animation()
+        # elif (self.current_time-self.hurry_up_update_time)//1000>=5:
+        #     self.character1_status=self.set_character1_delay()
         
         if self.speed!=0:
             self.character2_status='character2_work'
@@ -192,6 +199,7 @@ class Launcher:
         pointer_animation=self.asset.launcher_images['pointer']
         pipe_animation=self.asset.launcher_images['pipe']
         character1_1p_animation=self.character_1p_status[self.character1_status]
+        hurry_up_animation=self.asset.launcher_images['hurry_up']
         character2_1p_animation=self.character_1p_status[self.character2_status]
         character_2p_animation=self.character_2p_status['character_join']
         
@@ -220,18 +228,27 @@ class Launcher:
             self.pointer_frame_index=0
         
         if self.character1_frame_index>=len(character1_1p_animation):
-            self.character1_frame_index=0
             if self.character1_status=='character1_blowing':
+                self.character1_delay_time_update()
+                self.hurry_up_countdown()
                 self.character1_status='character1_idle'
-                # self.next_bubble.sprite.reload=True
-            #     self.character1_status='character1_load'
-            # elif self.character1_status=='character1_load':
-            #     self.character1_status='character1_idle'
-                self.character1_delay()
+            elif self.character1_status=='character1_delay1' or self.character1_status=='character1_delay2':
+                self.character1_status='character1_idle'
+            self.character1_frame_index=0
         
         if self.pipe_frame_index>=len(pipe_animation):
             self.pipe_frame_index=0
             self.pipe=False
+        
+        if self.character1_status=='character1_hurry_up':
+            self.hurry_up_countdown_frame_index+=1/30
+            if self.hurry_up_countdown_frame_index>=len(hurry_up_animation):
+                self.hurry_up_countdown_frame_index=0
+                self.launch_bubble()
+                self.character1_animation_speed=0.15
+                self.character1_status='character1_blowing'
+                # self.character1_delay_time_update()
+                # self.hurry_up_countdown()
         
         if self.character2_frame_index>=len(character2_1p_animation) or self.character2_frame_index<=-len(character2_1p_animation):
             self.character2_frame_index=0
@@ -254,16 +271,17 @@ class Launcher:
         
         self.pipe_image=pipe_animation[int(self.pipe_frame_index)]
         self.character1_image=character1_1p_animation[int(self.character1_frame_index)]
+        self.hurry_up_countdown_image=hurry_up_animation[int(self.hurry_up_countdown_frame_index)]
         self.character2_image=character2_1p_animation[int(self.character2_frame_index)]
         self.character_2p_image=character_2p_animation[int(self.character_2p_frame_index)]
     
     def update(self,level):
+        self.current_time=pygame.time.get_ticks()
         if level==0:
             self.set_guide_point()
             self.guide_point_collision()
             self.guide_point_sprite.update()
         self.set_key_input()
-        # self.character_delay()
         self.set_status()
         self.animation()
         self.bubble_sprite.update()
@@ -289,8 +307,9 @@ class Launcher:
             self.next_bubble.draw(screen)
         screen.blits([
             [self.borders_side_image,self.borders_side_image_rect],
-            [self.bubbles_pocket_image2,self.bubbles_pocket_image_rect]])
+            [self.bubbles_pocket_image2,self.bubbles_pocket_image_rect]
+            ])
+        if self.character1_status=='character1_hurry_up':
+            screen.blit(self.hurry_up_countdown_image,self.hurry_up_countdown_image_rect)
         
-        # print(self.load_bubble.load,self.load_bubble)
-        # print(self.collide_bubble)
-        print(self.character1_status)
+        print(self.character1_status,self.current_time)
