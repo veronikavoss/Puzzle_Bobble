@@ -14,8 +14,8 @@ class Asset:
         self.get_bubble_image()
     
     def get_font_n_ui_image(self):
-        # font_images
-        self.font_images={'all_font':[],'number':[],'alphabet':[]}
+        # info_font_images
+        self.font_images={'all_font':[],'number':[],'alphabet':[]} # 0,31,62,93
         
         for y in range(4):
             for x in range(31):
@@ -25,11 +25,20 @@ class Asset:
                 surface.set_colorkey((147,187,236))
                 self.font_images['all_font'].append(surface)
         
-        # 0,31,62,93
         del self.font_images['all_font'][111:] # 110
         self.font_images['all_font'].insert(62,self.font_images['all_font'][90])
         self.font_images['number']=self.font_images['all_font'][15:25] # 10
         self.font_images['alphabet']=self.font_images['all_font'][32:58] # 26
+        
+        # green_font_image
+        self.green_font_images={'all_font':[],'large':[],'small':[]}
+        for y in range(2):
+            for x in range(39):
+                surface=pygame.Surface((16,16))
+                surface.blit(self.general_sheet,(0,0),(17*x+1,17*y+2144,16,16))
+                surface=pygame.transform.scale(surface,(16*SCALE,16*SCALE))
+                surface.set_colorkey((147,187,236))
+                self.green_font_images['all_font'].append(surface)
         
         # round_board_image
         self.round_board=pygame.Surface((128,48))

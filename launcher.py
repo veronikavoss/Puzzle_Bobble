@@ -138,6 +138,8 @@ class Launcher:
     
     def launch_bubble(self):
         if not self.load_bubble.sprite.launched and self.load_bubble.sprite.load and not self.character1_status=='character1_blowing':
+            self.character1_status='character1_blowing'
+            self.character1_animation_speed=0.15
             self.pipe=True
             self.load_bubble.sprite.set_angle(self.angle)
             self.load_bubble.sprite.launched=True
@@ -172,13 +174,11 @@ class Launcher:
             self.character2_status=self.set_character2_delay()
     
     def set_status(self):
-        if self.load_bubble.sprite.launched and self.load_bubble.sprite.load:
-            self.character1_status='character1_blowing'
-            self.character1_animation_speed=0.15
-        elif not self.character1_status=='character1_delay1' or not self.character1_status=='character1_delay2':
-            if self.character1_status=='character1_idle':
-                self.character1_animation_speed=0.1
-                self.set_character1_delay_animation()
+        if not self.character1_status=='character1_blowing':
+            if not self.character1_status=='character1_delay1' or not self.character1_status=='character1_delay2':
+                if self.character1_status=='character1_idle':
+                    self.character1_animation_speed=0.1
+                    self.set_character1_delay_animation()
         # elif (self.current_time-self.hurry_up_update_time)//1000>=5:
         #     self.character1_status=self.set_character1_delay()
         
@@ -205,57 +205,52 @@ class Launcher:
         
         # set_frame_index_speed
         self.angle_adjuster_frame_index+=self.speed*0.5
-        self.controller_frame_index+=self.speed*0.5
-        self.pointer_frame_index+=self.speed
-        flip_pointer_frame_index=self.pointer_frame_index*-1
-        if self.pipe:
-            self.pipe_frame_index+=0.2
-        self.character1_frame_index+=self.character1_animation_speed
-        self.character2_frame_index+=self.character2_animation_speed
-        if self.character2_status=='character2_work':
-            self.character2_frame_index=self.controller_frame_index
-        
-        self.character_2p_frame_index+=0.1 # 2p blue character
-        
-        # set_after_maximum_frame_index
         if self.angle_adjuster_frame_index>=len(angle_adjuster_animation) or self.angle_adjuster_frame_index<=-len(angle_adjuster_animation):
             self.angle_adjuster_frame_index=0
         
+        self.controller_frame_index+=self.speed*0.5
         if self.controller_frame_index>=len(controller_animation) or self.controller_frame_index<=-len(controller_animation):
             self.controller_frame_index=0
         
+        self.pointer_frame_index+=self.speed
+        flip_pointer_frame_index=self.pointer_frame_index*-1
         if self.pointer_frame_index>=len(pointer_animation) or self.pointer_frame_index<=-len(pointer_animation):
             self.pointer_frame_index=0
         
+        if self.pipe:
+            self.pipe_frame_index+=0.2
+        if self.pipe_frame_index>=len(pipe_animation):
+            self.pipe_frame_index=0
+            self.pipe=False
+        
+        self.character1_frame_index+=self.character1_animation_speed
         if self.character1_frame_index>=len(character1_1p_animation):
+            self.character1_frame_index=0
             if self.character1_status=='character1_blowing':
                 self.character1_delay_time_update()
                 self.hurry_up_countdown()
                 self.character1_status='character1_idle'
             elif self.character1_status=='character1_delay1' or self.character1_status=='character1_delay2':
                 self.character1_status='character1_idle'
-            self.character1_frame_index=0
-        
-        if self.pipe_frame_index>=len(pipe_animation):
-            self.pipe_frame_index=0
-            self.pipe=False
         
         if self.character1_status=='character1_hurry_up':
             self.hurry_up_countdown_frame_index+=1/30
             if self.hurry_up_countdown_frame_index>=len(hurry_up_animation):
                 self.hurry_up_countdown_frame_index=0
                 self.launch_bubble()
-                self.character1_animation_speed=0.15
-                self.character1_status='character1_blowing'
                 # self.character1_delay_time_update()
                 # self.hurry_up_countdown()
         
+        self.character2_frame_index+=self.character2_animation_speed
+        if self.character2_status=='character2_work':
+            self.character2_frame_index=self.controller_frame_index
         if self.character2_frame_index>=len(character2_1p_animation) or self.character2_frame_index<=-len(character2_1p_animation):
             self.character2_frame_index=0
             if self.character2_status=='character2_delay1' or self.character2_status=='character2_delay2':
                 self.character2_status='character2_idle'
                 self.character2_delay()
         
+        self.character_2p_frame_index+=0.1 # 2p blue character
         if self.character_2p_frame_index>=len(character_2p_animation):
             self.character_2p_frame_index=0
         

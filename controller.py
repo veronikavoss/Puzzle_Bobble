@@ -14,10 +14,13 @@ class Controller:
         
         self.start_screen=True
         self.start_screen_sprite=StartScreen(self.screen,self.asset)
-        self.playing_game=False
         
         self.levels=Level()
         self.bubble_cell=pygame.sprite.Group()
+        
+        self.playing_game=False
+        self.round_start=False
+        self.round_update_time=0
         
         self.font_type='all_font' # all_font, number, alphabet
     
@@ -31,6 +34,9 @@ class Controller:
         self.launcher_sprite=Launcher(self.asset)
         self.level+=1
         
+        self.round_start=True
+        self.start_round_timer()
+        
         for row,data in enumerate(self.levels.levels[f'level_{self.level+1}']):
             for column,bubble in enumerate(data):
                 self.bubble_cell.add(BubbleCell(self.set_bubble_position(row,column),(row,column)))
@@ -42,6 +48,33 @@ class Controller:
         
         self.launcher_sprite.next_bubble.add(Bubble(
             self.asset,(GRID_CELL_SIZE*15,GRID_CELL_SIZE*25),self.launcher_sprite.choice_bubble_color()))
+    
+    def start_round_timer(self):
+        self.round_update_time=pygame.time.get_ticks()
+    
+    def popup_round_board(self):
+        if self.round_start:
+            if (self.current_time-self.round_update_time)//100<20:
+                # round_board_image
+                self.round_board_image=self.asset.round_board
+                self.round_board_image_rect=self.round_board_image.get_rect(topleft=(GRID_CELL_SIZE*12,GRID_CELL_SIZE*6))
+                self.screen.blit(self.round_board_image,self.round_board_image_rect)
+                
+                # round_board_text_image
+                round_text=[list('ROUND'),list(f'{self.level+1:0>2}')]
+                for column,text in enumerate(round_text[0]):
+                    x=column*(16*SCALE)+GRID_CELL_SIZE*15
+                    y=GRID_CELL_SIZE*7
+                    font_index=ord(text)-55
+                    font=self.asset.green_font_images['all_font'][font_index]
+                    self.screen.blit(font,(x,y))
+                
+                for column,text in enumerate(round_text[1]):
+                    x=column*(16*SCALE)+GRID_CELL_SIZE*18
+                    y=GRID_CELL_SIZE*9
+                    font_index=ord(text)-48
+                    font=self.asset.green_font_images['all_font'][font_index]
+                    self.screen.blit(font,(x,y))
     
     def set_bubble_position(self,row,column):
         if row%2==0:
@@ -91,8 +124,6 @@ class Controller:
             for cell in self.bubble_cell:
                 if bubble.rect.collidepoint(mouse_pos):
                     print(bubble.rect,bubble.color,bubble.load,bubble.index)
-                # if cell.rect.collidepoint(mouse_pos):
-                #     print(cell.index)
     
     def draw_background(self):
         level=min(self.level//3,9)
@@ -114,11 +145,12 @@ class Controller:
         bottom_text=list(f'`````````````````LEVEL-4`````CREDIT`{self.credit:0>2}``')
         for x,text in enumerate(bottom_text):
             if text!='`':
-                self.font_index=ord(text)-33
-                font=self.asset.font_images[self.font_type][self.font_index]
+                font_index=ord(text)-33
+                font=self.asset.font_images[self.font_type][font_index]
                 self.screen.blit(font,(x*GRID_CELL_SIZE,GRID_CELL_SIZE*27))
     
     def update(self):
+        self.current_time=pygame.time.get_ticks()
         if self.start_screen:
             self.start_screen_sprite.update()
             self.set_start_screen_timer()
@@ -139,6 +171,7 @@ class Controller:
             self.bubble_cell.draw(self.screen)
             self.launcher_sprite.draw(self.screen)
             self.draw_text()
+            self.popup_round_board()
         # else:
         #     self.screen.fill('black')
         #     self.draw_text()

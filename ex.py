@@ -1,9 +1,2 @@
-#%%
-def fac(num):
-    if num>1:
-        return num*fac(num-1)
-    else:
-        return 1
-
-print(fac(5))
-#%%
+print(ord('O'))
+print(ord('U')-65)
