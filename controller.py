@@ -118,6 +118,17 @@ class Controller:
     def remove_bubbles(self,row_index,column_index,color):
         self.visited.clear()
         self.visit(row_index,column_index,color)
+        print(self.visited)
+        if len(self.visited)>=3:
+            self.remove_visited_bubbles()
+    
+    def remove_visited_bubbles(self):
+        for bubble in self.launcher_sprite.bubble_sprite.sprites():
+            if bubble.index in self.visited:
+                bubble.bubble_status='pop'
+                self.launcher_sprite.load_bubble.sprite.bubble_status='pop'
+                self.level_data.levels[f'level_{self.level+1}'][bubble.index[0]][bubble.index[1]]='_'
+                # self.launcher_sprite.bubble_sprite.remove(bubble)
     
     def bubbles_collision(self):
         load_bubble=self.launcher_sprite.load_bubble.sprite
