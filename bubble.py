@@ -12,24 +12,22 @@ class Bubble(pygame.sprite.Sprite):
         self.create=create
         self.index=index
         
+        self.delay_time=choice([3000,4000,5000])
+        self.update_time=pygame.time.get_ticks()
+        self.delay_animation_count=0
+        
         self.launched=False
         self.reload=False
-        self.bubble_status='delay'
+        self.bubble_status='idle'
         self.bubble_frame_index=0
         self.set_bubbles_image()
         self.image=self.bubbles_status[self.bubble_status][self.bubble_frame_index]
         self.rect=self.image.get_rect(topleft=pos)
         self.direction=pygame.math.Vector2(0,0)
         self.radius=18
-        
-        self.delay_time=choice([3000,4000,5000])
-        self.delay_animation_count=0
-        
-        self.update_time=pygame.time.get_ticks()
-        # self.delay_animation()
     
     def red_bubble(self,color):
-        if self.bubble_status=='delay':
+        if self.bubble_status=='idle':
             if color=='R':
                 bubble=self.asset.bubbles_image['R'][1:2]
             else:
@@ -56,60 +54,85 @@ class Bubble(pygame.sprite.Sprite):
         bubble_color=self.color
         # bubble_color='R'
         self.bubbles_status={
-            'idle':self.asset.bubbles_image[bubble_color][1:2],
-            'delay':self.red_bubble(bubble_color),
-            'collide':self.asset.bubbles_image[bubble_color][5:],
+            'normal':self.asset.bubbles_image[bubble_color][0:1],
+            'idle':self.red_bubble(bubble_color),
+            'collide':[self.asset.bubbles_image[bubble_color][1],*self.asset.bubbles_image[bubble_color][5:]],
             'pop':self.asset.bubbles_pop_image[bubble_color],
             'popped':self.asset.bubbles_popped_image[bubble_color][:4],
             'dead':self.red_bubble(bubble_color)
         }
     
-    def delay_animation(self):
+    def delay_animation_timer(self):
         self.update_time=pygame.time.get_ticks()
+    
+    def delay_animation(self,bubble_animation):
+        if self.color=='Y':
+            self.bubble_frame_index+=0.5
+            if self.bubble_frame_index>=len(bubble_animation):
+                self.delay_animation_count+=1
+                self.bubble_frame_index=0
+                if self.delay_animation_count>=3:
+                    self.delay_animation_count=0
+                    self.delay_animation_timer()
+        elif self.color=='B':
+            self.bubble_frame_index+=0.1
+            if self.bubble_frame_index>=len(bubble_animation):
+                self.delay_animation_count+=1
+                self.bubble_frame_index=0
+                if self.delay_animation_count>=2:
+                    self.delay_animation_count=0
+                    self.delay_animation_timer()
+        elif self.color=='L':
+            self.bubble_frame_index+=0.2
+            if self.bubble_frame_index>=len(bubble_animation):
+                self.delay_animation_count+=1
+                self.bubble_frame_index=0
+                if self.delay_animation_count>=2:
+                    self.delay_animation_count=0
+                    self.delay_animation_timer()
+        elif self.color=='O':
+            self.bubble_frame_index+=0.5
+            if self.bubble_frame_index>=len(bubble_animation):
+                self.delay_animation_count+=1
+                self.bubble_frame_index=0
+                if self.delay_animation_count>=1:
+                    self.delay_animation_count=0
+                    self.delay_animation_timer()
+        else:
+            self.bubble_frame_index+=0.1
+            if self.bubble_frame_index>=len(bubble_animation):
+                self.bubble_frame_index=0
+                self.delay_animation_timer()
     
     def animation(self):
         current_time=pygame.time.get_ticks()
-        if current_time-self.update_time>=self.delay_time:
-            bubble_animation=self.bubbles_status[self.bubble_status]
-            if self.color=='Y':
-                self.bubble_frame_index+=0.5
-                if self.bubble_frame_index>=len(bubble_animation):
-                    self.delay_animation_count+=1
-                    self.bubble_frame_index=0
-                    if self.delay_animation_count>=3:
-                        self.delay_animation_count=0
-                        self.delay_animation()
-            elif self.color=='B':
-                self.bubble_frame_index+=0.1
-                if self.bubble_frame_index>=len(bubble_animation):
-                    self.delay_animation_count+=1
-                    self.bubble_frame_index=0
-                    if self.delay_animation_count>=2:
-                        self.delay_animation_count=0
-                        self.delay_animation()
-            elif self.color=='L':
-                self.bubble_frame_index+=0.2
-                if self.bubble_frame_index>=len(bubble_animation):
-                    self.delay_animation_count+=1
-                    self.bubble_frame_index=0
-                    if self.delay_animation_count>=2:
-                        self.delay_animation_count=0
-                        self.delay_animation()
-            elif self.color=='O':
-                self.bubble_frame_index+=0.5
-                if self.bubble_frame_index>=len(bubble_animation):
-                    self.delay_animation_count+=1
-                    self.bubble_frame_index=0
-                    if self.delay_animation_count>=1:
-                        self.delay_animation_count=0
-                        self.delay_animation()
-            else:
-                self.bubble_frame_index+=0.1
-                if self.bubble_frame_index>=len(bubble_animation):
-                    self.bubble_frame_index=0
-                    self.delay_animation()
-                
-            self.image=bubble_animation[int(self.bubble_frame_index)]
+        
+        bubble_animation=self.bubbles_status[self.bubble_status]
+        
+        if self.bubble_status=='idle':
+            if current_time-self.update_time>=self.delay_time:
+                self.delay_animation(bubble_animation)
+        elif self.bubble_status=='collide':
+            self.bubble_frame_index+=0.3
+            if self.bubble_frame_index>=len(bubble_animation):
+                self.bubble_frame_index=0
+                self.bubble_status='idle'
+        elif self.bubble_status=='pop':
+            self.bubble_frame_index+=0.3
+            if self.bubble_frame_index>=len(bubble_animation):
+                self.bubble_frame_index=0
+                self.bubble_status='popped'
+        elif self.bubble_status=='popped':
+            self.bubble_frame_index+=0.1
+            if self.bubble_frame_index>=len(bubble_animation):
+                self.bubble_frame_index=0
+                self.kill()
+        else:
+            self.bubble_frame_index+=0.1
+            if self.bubble_frame_index>=len(bubble_animation):
+                self.bubble_frame_index=0
+        
+        self.image=bubble_animation[int(self.bubble_frame_index)]
     
     def set_angle(self,angle):
         self.angle=angle

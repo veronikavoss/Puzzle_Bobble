@@ -103,13 +103,15 @@ class Controller:
             row_index,column_index=self.get_map_index()
             self.levels.levels[f'level_{self.level+1}'][row_index][column_index]=load_bubble.color
             self.launcher_sprite.load_bubble.sprite.set_rect(self.set_bubble_position(row_index,column_index))
+            self.launcher_sprite.load_bubble.sprite.bubble_status='collide'
+            # self.launcher_sprite.load_bubble.sprite.set_rect(\
+            #     (self.launcher_sprite.load_bubble.sprite.rect.x-(self.launcher_sprite.load_bubble.sprite.rect.w//2),\
+            #         (self.launcher_sprite.load_bubble.sprite.rect.y-(self.launcher_sprite.load_bubble.sprite.rect.h//2))))
             self.launcher_sprite.load_bubble.sprite.index=(row_index,column_index)
             self.launcher_sprite.bubble_sprite.add(self.launcher_sprite.load_bubble.sprite)
             self.launcher_sprite.load_bubble.sprite.launched=False
             self.launcher_sprite.load_bubble.add(self.launcher_sprite.next_bubble)
             self.launcher_sprite.create_bubble()
-            # self.launcher_sprite.next_bubble.sprite.reload=True
-        # print(load_bubble.rect,load_bubble.load,load_bubble.index)
         
         if pygame.sprite.collide_mask(load_bubble,self.launcher_sprite.borders_sprite.sprite):
             if load_bubble.rect.top<=self.launcher_sprite.borders_sprite.sprite.rect.bottom:
