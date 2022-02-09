@@ -307,4 +307,4 @@ class Launcher:
         if self.character1_status=='character1_hurry_up':
             screen.blit(self.hurry_up_countdown_image,self.hurry_up_countdown_image_rect)
         
-        print(self.character1_status,self.current_time)
+        # print(self.character1_status,self.current_time)

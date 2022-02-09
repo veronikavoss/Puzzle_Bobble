@@ -21,6 +21,12 @@ class Bubble(pygame.sprite.Sprite):
         self.rect=self.image.get_rect(topleft=pos)
         self.direction=pygame.math.Vector2(0,0)
         self.radius=18
+        
+        self.delay_time=choice([3000,4000,5000])
+        self.delay_animation_count=0
+        
+        self.update_time=pygame.time.get_ticks()
+        # self.delay_animation()
     
     def red_bubble(self,color):
         if self.bubble_status=='delay':
@@ -58,12 +64,52 @@ class Bubble(pygame.sprite.Sprite):
             'dead':self.red_bubble(bubble_color)
         }
     
+    def delay_animation(self):
+        self.update_time=pygame.time.get_ticks()
+    
     def animation(self):
-        bubble_animation=self.bubbles_status[self.bubble_status]
-        self.bubble_frame_index+=0.1
-        if self.bubble_frame_index>=len(bubble_animation):
-            self.bubble_frame_index=0
-        self.image=bubble_animation[int(self.bubble_frame_index)]
+        current_time=pygame.time.get_ticks()
+        if current_time-self.update_time>=self.delay_time:
+            bubble_animation=self.bubbles_status[self.bubble_status]
+            if self.color=='Y':
+                self.bubble_frame_index+=0.5
+                if self.bubble_frame_index>=len(bubble_animation):
+                    self.delay_animation_count+=1
+                    self.bubble_frame_index=0
+                    if self.delay_animation_count>=3:
+                        self.delay_animation_count=0
+                        self.delay_animation()
+            elif self.color=='B':
+                self.bubble_frame_index+=0.1
+                if self.bubble_frame_index>=len(bubble_animation):
+                    self.delay_animation_count+=1
+                    self.bubble_frame_index=0
+                    if self.delay_animation_count>=2:
+                        self.delay_animation_count=0
+                        self.delay_animation()
+            elif self.color=='L':
+                self.bubble_frame_index+=0.2
+                if self.bubble_frame_index>=len(bubble_animation):
+                    self.delay_animation_count+=1
+                    self.bubble_frame_index=0
+                    if self.delay_animation_count>=2:
+                        self.delay_animation_count=0
+                        self.delay_animation()
+            elif self.color=='O':
+                self.bubble_frame_index+=0.5
+                if self.bubble_frame_index>=len(bubble_animation):
+                    self.delay_animation_count+=1
+                    self.bubble_frame_index=0
+                    if self.delay_animation_count>=1:
+                        self.delay_animation_count=0
+                        self.delay_animation()
+            else:
+                self.bubble_frame_index+=0.1
+                if self.bubble_frame_index>=len(bubble_animation):
+                    self.bubble_frame_index=0
+                    self.delay_animation()
+                
+            self.image=bubble_animation[int(self.bubble_frame_index)]
     
     def set_angle(self,angle):
         self.angle=angle
