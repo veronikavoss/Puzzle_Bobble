@@ -2,7 +2,7 @@ from setting import *
 from start_screen import StartScreen
 from level import *
 from launcher import Launcher
-from bubble import Bubble, BubbleCell
+from bubble import Bubble, BubbleCell, BubblePop
 from random import choice
 
 class Controller:
@@ -17,6 +17,7 @@ class Controller:
         
         self.level_data=Level()
         self.bubble_cell=pygame.sprite.Group()
+        self.bubble_popped=pygame.sprite.Group()
         
         self.playing_game=False
         self.round_start=False
@@ -126,6 +127,7 @@ class Controller:
             if bubble.index in self.visited:
                 bubble.bubble_status='pop'
                 self.launcher_sprite.load_bubble.sprite.bubble_status='pop'
+                self.bubble_popped.add(BubblePop(self.asset,bubble.rect.center,bubble.color))
                 bubble.set_rect((bubble.rect.x-(bubble.rect.w//2),(bubble.rect.y-(bubble.rect.h//2))))
                 self.level_data.levels[f'level_{self.level+1}'][bubble.index[0]][bubble.index[1]]='_'
     
@@ -196,6 +198,7 @@ class Controller:
                 self.launcher_sprite.load_bubble.sprite.update()
             self.launcher_sprite.next_bubble.update()
             self.bubbles_collision()
+            self.bubble_popped.update()
             self.check_index()
     
     def draw(self):
@@ -206,6 +209,7 @@ class Controller:
             self.draw_background()
             self.bubble_cell.draw(self.screen)
             self.launcher_sprite.draw(self.screen)
+            self.bubble_popped.draw(self.screen)
             self.draw_text()
             self.popup_round_board()
         # else:

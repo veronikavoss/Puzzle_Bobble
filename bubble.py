@@ -23,9 +23,6 @@ class Bubble(pygame.sprite.Sprite):
         self.set_bubbles_image()
         self.image=self.bubbles_status[self.bubble_status][self.bubble_frame_index]
         self.rect=self.image.get_rect(topleft=pos)
-        self.bubble_popped_frame_index=0
-        self.popped_image=self.bubbles_status[self.bubble_status][self.bubble_frame_index]
-        self.popped_image_rect=self.image.get_rect(center=self.rect.center)
         self.direction=pygame.math.Vector2(0,0)
         self.radius=18
     
@@ -111,7 +108,6 @@ class Bubble(pygame.sprite.Sprite):
         current_time=pygame.time.get_ticks()
         
         bubble_animation=self.bubbles_status[self.bubble_status]
-        pop_animation=self.bubbles_status[self.bubble_status]
         
         if self.bubble_status=='idle':
             if current_time-self.update_time>=self.delay_time:
@@ -122,12 +118,7 @@ class Bubble(pygame.sprite.Sprite):
                 self.bubble_frame_index=0
                 self.bubble_status='idle'
         elif self.bubble_status=='pop':
-            self.bubble_frame_index+=0.01
-            if self.bubble_frame_index>=len(pop_animation):
-                self.bubble_frame_index=0
-                self.bubble_status='popped'
-        elif self.bubble_status=='popped':
-            self.bubble_frame_index+=0.01
+            self.bubble_frame_index+=0.05
             if self.bubble_frame_index>=len(bubble_animation):
                 self.bubble_frame_index=0
                 self.kill()
@@ -195,9 +186,26 @@ class Bubble(pygame.sprite.Sprite):
         self.animation()
         self.launch()
         self.loading()
+
+class BubblePop(Bubble):
+    def __init__(self,asset,pos,color):
+        Bubble.__init__(self,asset,pos,color)
+        self.bubble_status='popped'
+        self.bubble_popped_frame_index=0
+        self.image=self.bubbles_status['popped'][self.bubble_popped_frame_index]
+        self.rect=self.image.get_rect(center=pos)
     
-    def draw(self,screen):
-        screen.blit(self.popped_image,self.popped_image_rect)
+    def animation(self):
+        popped_animation=self.bubbles_status['popped']
+        self.bubble_popped_frame_index+=0.2
+        if self.bubble_popped_frame_index>=len(popped_animation):
+            self.bubble_popped_frame_index=0
+            self.kill()
+        self.image=popped_animation[int(self.bubble_popped_frame_index)]
+    
+    def update(self):
+        self.animation()
+        print(self.bubble_popped_frame_index)
 
 class BubbleCell(pygame.sprite.Sprite):
     def __init__(self,topleft,index):
