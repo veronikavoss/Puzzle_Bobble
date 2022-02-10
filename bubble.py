@@ -123,7 +123,8 @@ class Bubble(pygame.sprite.Sprite):
                 self.bubble_frame_index=0
                 self.bubble_status='popped'
         elif self.bubble_status=='popped':
-            self.bubble_frame_index+=0.1
+            self.set_rect((self.rect.x+(self.rect.w//2),(self.rect.y+(self.rect.h//2))))
+            self.bubble_frame_index+=0.05
             if self.bubble_frame_index>=len(bubble_animation):
                 self.bubble_frame_index=0
                 self.kill()

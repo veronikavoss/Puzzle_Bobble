@@ -144,6 +144,7 @@ class Launcher:
             self.load_bubble.sprite.set_angle(self.angle)
             self.load_bubble.sprite.launched=True
             self.next_bubble.sprite.reload=True
+            self.hurry_up_countdown_frame_index=0
     
     def choice_bubble_color(self):
         bubble=choice(self.bubble_sprite.sprites())
@@ -152,45 +153,45 @@ class Launcher:
     def create_bubble(self):
         self.next_bubble.add(Bubble(self.asset,(GRID_CELL_SIZE*12,GRID_CELL_SIZE*25),self.choice_bubble_color(),create=True))
     
-    def character1_delay_time_update(self):
+    def character1_delay_timer(self):
         self.character1_update_time=pygame.time.get_ticks()
     
-    def set_character1_delay_animation(self):
+    def character1_delay_animation(self):
         if (self.current_time-self.character1_update_time)//100==30:
             self.character1_status=choice(['character1_delay1','character1_delay2'])
         elif (self.current_time-self.hurry_up_update_time)//100==50:
-            self.character1_status=self.hurry_up_countdown()
+            self.character1_status=self.hurry_up_timer()
     
-    def hurry_up_countdown(self):
+    def hurry_up_timer(self):
         self.hurry_up_update_time=pygame.time.get_ticks()
         return 'character1_hurry_up'
     
-    def set_character2_delay(self):
+    def character2_delay_timer(self):
         self.character2_update_time=pygame.time.get_ticks()
         return choice(['character2_delay1','character2_delay2'])
     
-    def character2_delay(self):
+    def character2_delay_animation(self):
         if (self.current_time-self.character2_update_time)//100>=30:
-            self.character2_status=self.set_character2_delay()
+            self.character2_status=self.character2_delay_timer()
     
-    def set_status(self):
+    def set_idle_status(self):
         if not self.character1_status=='character1_blowing':
             if not self.character1_status=='character1_delay1' or not self.character1_status=='character1_delay2':
                 if self.character1_status=='character1_idle':
                     self.character1_animation_speed=0.1
-                    self.set_character1_delay_animation()
+                    self.character1_delay_animation()
         # elif (self.current_time-self.hurry_up_update_time)//1000>=5:
         #     self.character1_status=self.set_character1_delay()
         
         if self.speed!=0:
             self.character2_status='character2_work'
-            self.set_character2_delay()
+            self.character2_delay_timer()
         else:
             if self.character2_status=='character2_delay1' or self.character2_status=='character2_delay2':
                 self.character2_animation_speed=0.1
             else:
                 self.character2_status='character2_idle'
-                self.character2_delay()
+                self.character2_delay_animation()
     
     def animation(self):
         # set_images
@@ -227,8 +228,8 @@ class Launcher:
         if self.character1_frame_index>=len(character1_1p_animation):
             self.character1_frame_index=0
             if self.character1_status=='character1_blowing':
-                self.character1_delay_time_update()
-                self.hurry_up_countdown()
+                self.character1_delay_timer()
+                self.hurry_up_timer()
                 self.character1_status='character1_idle'
             elif self.character1_status=='character1_delay1' or self.character1_status=='character1_delay2':
                 self.character1_status='character1_idle'
@@ -238,8 +239,6 @@ class Launcher:
             if self.hurry_up_countdown_frame_index>=len(hurry_up_animation):
                 self.hurry_up_countdown_frame_index=0
                 self.launch_bubble()
-                # self.character1_delay_time_update()
-                # self.hurry_up_countdown()
         
         self.character2_frame_index+=self.character2_animation_speed
         if self.character2_status=='character2_work':
@@ -248,7 +247,7 @@ class Launcher:
             self.character2_frame_index=0
             if self.character2_status=='character2_delay1' or self.character2_status=='character2_delay2':
                 self.character2_status='character2_idle'
-                self.character2_delay()
+                self.character2_delay_animation()
         
         self.character_2p_frame_index+=0.1 # 2p blue character
         if self.character_2p_frame_index>=len(character_2p_animation):
@@ -277,7 +276,7 @@ class Launcher:
             self.guide_point_collision()
             self.guide_point_sprite.update()
         self.set_key_input()
-        self.set_status()
+        self.set_idle_status()
         self.animation()
         self.bubble_sprite.update()
     
