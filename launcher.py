@@ -65,7 +65,10 @@ class Launcher:
         
         self.pointer_frame_index=0
         self.pointer_image=self.asset.launcher_images['pointer'][self.pointer_frame_index]
+        self.pointer_image=pygame.transform.rotate(self.pointer_image,-90)
+        self.clone_pointer_image=self.pointer_image
         self.pointer_rect=self.pointer_image.get_rect(bottomleft=(GRID_CELL_SIZE*16,SCREEN_HEIGHT))
+        self.pointer_rect_center=self.pointer_rect.center
         
         self.pipe=False
         self.pipe_frame_index=0
@@ -125,16 +128,16 @@ class Launcher:
     
     def set_key_input(self):
         key_input=pygame.key.get_pressed()
-        if key_input[pygame.K_LEFT] and self.pointer_frame_index>=-len(self.asset.launcher_images['pointer'])+5:
-            self.speed=-1
-        elif key_input[pygame.K_RIGHT] and self.pointer_frame_index<=len(self.asset.launcher_images['pointer'])-5:
+        if key_input[pygame.K_LEFT] and self.angle<=175:
             self.speed=1
+        elif key_input[pygame.K_RIGHT] and self.angle>=5:
+            self.speed=-1
         else:
             self.speed=0
         if key_input[pygame.K_SPACE]:
             self.launch_bubble()
         
-        self.angle+=self.speed*-1.45
+        self.angle+=self.speed
     
     def launch_bubble(self):
         if not self.load_bubble.sprite.launched and self.load_bubble.sprite.load and not self.character1_status=='character1_blowing':
@@ -197,7 +200,6 @@ class Launcher:
         # set_images
         angle_adjuster_animation=self.asset.launcher_images['angle_adjuster']
         controller_animation=self.asset.launcher_images['controller']
-        pointer_animation=self.asset.launcher_images['pointer']
         pipe_animation=self.asset.launcher_images['pipe']
         character1_1p_animation=self.character_1p_status[self.character1_status]
         hurry_up_animation=self.asset.launcher_images['hurry_up']
@@ -212,11 +214,6 @@ class Launcher:
         self.controller_frame_index+=self.speed*0.5
         if self.controller_frame_index>=len(controller_animation) or self.controller_frame_index<=-len(controller_animation):
             self.controller_frame_index=0
-        
-        self.pointer_frame_index+=self.speed
-        flip_pointer_frame_index=self.pointer_frame_index*-1
-        if self.pointer_frame_index>=len(pointer_animation) or self.pointer_frame_index<=-len(pointer_animation):
-            self.pointer_frame_index=0
         
         if self.pipe:
             self.pipe_frame_index+=0.2
@@ -256,13 +253,8 @@ class Launcher:
         # set_images
         self.angle_adjuster_image=angle_adjuster_animation[int(self.angle_adjuster_frame_index)]
         self.controller_image=controller_animation[int(self.controller_frame_index)]
-        
-        if self.pointer_frame_index<0:
-            self.pointer_image=pointer_animation[int(flip_pointer_frame_index)]
-            self.pointer_image=pygame.transform.flip(self.pointer_image,True,False)
-        else:
-            self.pointer_image=pointer_animation[int(self.pointer_frame_index)]
-        
+        self.pointer_image=pygame.transform.rotate(self.clone_pointer_image,self.angle)
+        self.pointer_image_rect=self.pointer_image.get_rect(center=self.pointer_rect_center)
         self.pipe_image=pipe_animation[int(self.pipe_frame_index)]
         self.character1_image=character1_1p_animation[int(self.character1_frame_index)]
         self.hurry_up_countdown_image=hurry_up_animation[int(self.hurry_up_countdown_frame_index)]
@@ -285,7 +277,7 @@ class Launcher:
             [self.boundary_image,self.boundary_image_rect],
             [self.angle_adjuster_image,self.angle_adjuster_image_rect],
             [self.controller_image,self.controller_image_rect],
-            [self.pointer_image,self.pointer_rect],
+            [self.pointer_image,self.pointer_image_rect],
             [self.pipe_image,self.pipe_image_rect],
             [self.bubbles_pocket_image1,self.bubbles_pocket_image_rect],
             [self.character1_image,self.character1_image_rect],
