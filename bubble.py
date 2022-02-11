@@ -1,4 +1,3 @@
-from itertools import count
 from setting import *
 from random import choice
 import math
@@ -27,6 +26,7 @@ class Bubble(pygame.sprite.Sprite):
         self.radius=18
         self.gravity=0.5
         self.pop_bounce_speed=-12
+        self.drop=False
     
     def red_bubble(self,color):
         if self.bubble_status=='idle':
@@ -133,6 +133,13 @@ class Bubble(pygame.sprite.Sprite):
         
         self.image=bubble_animation[int(self.bubble_frame_index)]
     
+    def dropped(self):
+        if self.drop and self.rect.top<SCREEN_HEIGHT:
+            self.set_gravity()
+            if self.rect.top>=SCREEN_HEIGHT:
+                self.kill()
+                self.drop=False
+    
     def set_gravity(self):
         self.rect.x+=self.direction.x
         self.direction.y+=self.gravity
@@ -199,6 +206,7 @@ class Bubble(pygame.sprite.Sprite):
         self.animation()
         self.launch()
         self.loading()
+        self.dropped()
 
 class BubblePop(Bubble):
     def __init__(self,asset,pos,color):
@@ -218,7 +226,6 @@ class BubblePop(Bubble):
     
     def update(self):
         self.animation()
-        print(self.bubble_popped_frame_index)
 
 class BubbleCell(pygame.sprite.Sprite):
     def __init__(self,topleft,index):

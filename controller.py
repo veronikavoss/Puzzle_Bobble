@@ -1,6 +1,6 @@
 from setting import *
 from start_screen import StartScreen
-from level import *
+from level import Level
 from launcher import Launcher
 from bubble import Bubble, BubbleCell, BubblePop
 from random import choice
@@ -95,11 +95,14 @@ class Controller:
                 row_index=cell.index[1]
                 return column_index,row_index
     
-    def visit(self,row_index,column_index,color):
+    def visit(self,row_index,column_index,color=None):
         if row_index<0 or row_index>=STAGE_ROW or column_index<0 or column_index>=STAGE_COLUMN:
             return
         
-        if self.level_data.levels[f'level_{self.level+1}'][row_index][column_index]!=color:
+        if color and self.level_data.levels[f'level_{self.level+1}'][row_index][column_index]!=color:
+            return
+        
+        if self.level_data.levels[f'level_{self.level+1}'][row_index][column_index]=='_':
             return
         
         if (row_index,column_index) in self.visited:
@@ -120,17 +123,34 @@ class Controller:
         self.visited.clear()
         self.visit(row_index,column_index,color)
         if len(self.visited)>=3:
-            self.remove_visited_bubbles()
+            self.remove_popped_bubbles()
+            # self.remove_dropped_bubbles()
     
-    def remove_visited_bubbles(self):
+    def remove_popped_bubbles(self):
         for bubble in self.launcher_sprite.bubble_sprite.sprites():
             if bubble.index in self.visited:
                 bubble.bubble_status='pop'
                 self.launcher_sprite.load_bubble.sprite.bubble_status='pop'
+                self.level_data.levels[f'level_{self.level+1}'][bubble.index[0]][bubble.index[1]]='_'
                 bubble.pop_bounce()
                 self.bubble_popped.add(BubblePop(self.asset,bubble.rect.center,bubble.color))
-                # bubble.set_rect((bubble.rect.x-(bubble.rect.w//2),(bubble.rect.y-(bubble.rect.h//2))))
+    
+    def remove_dropped_bubbles(self):
+        self.visited.clear()
+        for column_index in range(STAGE_COLUMN):
+            if self.level_data.levels[f'level_{self.level+1}'][0][column_index]!='_':
+                self.visit(0,column_index)
+                print(self.level_data.levels[f'level_{self.level+1}'])
+                print(self.visited)
+                self.drop_bubbles()
+    
+    def drop_bubbles(self):
+        for bubble in self.launcher_sprite.bubble_sprite.sprites():
+            if bubble.index not in self.visited:
+                bubble.drop=True
                 self.level_data.levels[f'level_{self.level+1}'][bubble.index[0]][bubble.index[1]]='_'
+                # bubble.dropped()
+                # bubble.kill()
     
     def bubbles_collision(self):
         load_bubble=self.launcher_sprite.load_bubble.sprite
@@ -139,16 +159,16 @@ class Controller:
         ceiling_collide_bubble=pygame.sprite.spritecollideany(load_bubble,self.launcher_sprite.borders_sprite,pygame.sprite.collide_mask)
         
         if (bubble_n_bubble_collide and bubble_n_bubble_collide.bubble_status!='pop') or ceiling_collide_bubble:
-                row_index,column_index=self.get_map_index()
-                self.level_data.levels[f'level_{self.level+1}'][row_index][column_index]=load_bubble.color
-                self.launcher_sprite.load_bubble.sprite.set_rect(self.set_bubble_position(row_index,column_index))
-                self.launcher_sprite.load_bubble.sprite.bubble_status='collide'
-                self.launcher_sprite.load_bubble.sprite.index=(row_index,column_index)
-                self.launcher_sprite.bubble_sprite.add(self.launcher_sprite.load_bubble.sprite)
-                self.remove_bubbles(row_index,column_index,load_bubble.color)
-                self.launcher_sprite.load_bubble.sprite.launched=False
-                self.launcher_sprite.load_bubble.add(self.launcher_sprite.next_bubble)
-                self.launcher_sprite.create_bubble()
+            row_index,column_index=self.get_map_index()
+            self.level_data.levels[f'level_{self.level+1}'][row_index][column_index]=load_bubble.color
+            self.launcher_sprite.load_bubble.sprite.set_rect(self.set_bubble_position(row_index,column_index))
+            self.launcher_sprite.load_bubble.sprite.bubble_status='collide'
+            self.launcher_sprite.load_bubble.sprite.index=(row_index,column_index)
+            self.launcher_sprite.bubble_sprite.add(self.launcher_sprite.load_bubble.sprite)
+            self.remove_bubbles(row_index,column_index,load_bubble.color)
+            self.launcher_sprite.load_bubble.sprite.launched=False
+            self.launcher_sprite.load_bubble.add(self.launcher_sprite.next_bubble)
+            self.launcher_sprite.create_bubble()
         
         if pygame.sprite.collide_mask(load_bubble,self.launcher_sprite.borders_sprite.sprite):
             if load_bubble.rect.top<=self.launcher_sprite.borders_sprite.sprite.rect.bottom:
