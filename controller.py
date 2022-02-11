@@ -127,8 +127,9 @@ class Controller:
             if bubble.index in self.visited:
                 bubble.bubble_status='pop'
                 self.launcher_sprite.load_bubble.sprite.bubble_status='pop'
+                bubble.pop_bounce()
                 self.bubble_popped.add(BubblePop(self.asset,bubble.rect.center,bubble.color))
-                bubble.set_rect((bubble.rect.x-(bubble.rect.w//2),(bubble.rect.y-(bubble.rect.h//2))))
+                # bubble.set_rect((bubble.rect.x-(bubble.rect.w//2),(bubble.rect.y-(bubble.rect.h//2))))
                 self.level_data.levels[f'level_{self.level+1}'][bubble.index[0]][bubble.index[1]]='_'
     
     def bubbles_collision(self):
@@ -137,7 +138,7 @@ class Controller:
         bubble_n_bubble_collide=pygame.sprite.spritecollideany(load_bubble,self.launcher_sprite.bubble_sprite,pygame.sprite.collide_mask)
         ceiling_collide_bubble=pygame.sprite.spritecollideany(load_bubble,self.launcher_sprite.borders_sprite,pygame.sprite.collide_mask)
         
-        if (bubble_n_bubble_collide and bubble_n_bubble_collide.bubble_status!='popped') or ceiling_collide_bubble:
+        if (bubble_n_bubble_collide and bubble_n_bubble_collide.bubble_status!='pop') or ceiling_collide_bubble:
                 row_index,column_index=self.get_map_index()
                 self.level_data.levels[f'level_{self.level+1}'][row_index][column_index]=load_bubble.color
                 self.launcher_sprite.load_bubble.sprite.set_rect(self.set_bubble_position(row_index,column_index))

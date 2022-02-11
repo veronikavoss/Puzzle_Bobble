@@ -1,5 +1,5 @@
-from guide_point import GuidePoint
 from setting import *
+from guide_point import GuidePoint
 from bubble import Bubble
 from borders import Border
 from random import choice
@@ -69,6 +69,7 @@ class Launcher:
         self.clone_pointer_image=self.pointer_image
         self.pointer_rect=self.pointer_image.get_rect(bottomleft=(GRID_CELL_SIZE*16,SCREEN_HEIGHT))
         self.pointer_rect_center=self.pointer_rect.center
+        self.pointer_image_rect=self.pointer_image.get_rect(center=self.pointer_rect_center)
         
         self.pipe=False
         self.pipe_frame_index=0
@@ -297,5 +298,6 @@ class Launcher:
             ])
         if self.character1_status=='character1_hurry_up':
             screen.blit(self.hurry_up_countdown_image,self.hurry_up_countdown_image_rect)
+        print(len(self.bubble_sprite))
         
         # print(self.character1_status,self.current_time)

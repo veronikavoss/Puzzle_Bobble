@@ -25,6 +25,8 @@ class Bubble(pygame.sprite.Sprite):
         self.rect=self.image.get_rect(topleft=pos)
         self.direction=pygame.math.Vector2(0,0)
         self.radius=18
+        self.gravity=0.5
+        self.pop_bounce_speed=-12
     
     def red_bubble(self,color):
         if self.bubble_status=='idle':
@@ -118,16 +120,27 @@ class Bubble(pygame.sprite.Sprite):
                 self.bubble_frame_index=0
                 self.bubble_status='idle'
         elif self.bubble_status=='pop':
-            self.bubble_frame_index+=0.05
+            self.set_gravity()
+            self.bubble_frame_index+=0.1
             if self.bubble_frame_index>=len(bubble_animation):
                 self.bubble_frame_index=0
-                self.kill()
+                if self.rect.top>=SCREEN_HEIGHT:
+                    self.kill()
         else:
             self.bubble_frame_index+=0.1
             if self.bubble_frame_index>=len(bubble_animation):
                 self.bubble_frame_index=0
         
         self.image=bubble_animation[int(self.bubble_frame_index)]
+    
+    def set_gravity(self):
+        self.rect.x+=self.direction.x
+        self.direction.y+=self.gravity
+        self.rect.y+=self.direction.y
+    
+    def pop_bounce(self):
+        self.direction.x=choice((-1,1))
+        self.direction.y=self.pop_bounce_speed
     
     def set_angle(self,angle):
         self.angle=angle
