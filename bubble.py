@@ -59,8 +59,8 @@ class Bubble(pygame.sprite.Sprite):
             'normal':self.asset.bubbles_image[bubble_color][0:1],
             'idle':self.red_bubble(bubble_color),
             'collide':[self.asset.bubbles_image[bubble_color][1],*self.asset.bubbles_image[bubble_color][5:]],
-            'popped':self.asset.bubbles_pop_image[bubble_color],
-            'pop':self.asset.bubbles_popped_image[bubble_color][:4],
+            'pop':self.asset.bubbles_pop_image[bubble_color],
+            'popped':self.asset.bubbles_popped_image[bubble_color][:4],
             'dead':self.red_bubble(bubble_color)
         }
     
@@ -119,13 +119,13 @@ class Bubble(pygame.sprite.Sprite):
             if self.bubble_frame_index>=len(bubble_animation):
                 self.bubble_frame_index=0
                 self.bubble_status='idle'
-        elif self.bubble_status=='pop':
-            self.set_gravity()
-            self.bubble_frame_index+=0.1
-            if self.bubble_frame_index>=len(bubble_animation):
-                self.bubble_frame_index=0
-                if self.rect.top>=SCREEN_HEIGHT:
-                    self.kill()
+        # elif self.bubble_status=='pop':
+        #     self.set_gravity()
+        #     self.bubble_frame_index+=0.1
+        #     if self.bubble_frame_index>=len(bubble_animation):
+        #         self.bubble_frame_index=0
+        #         if self.rect.top>=SCREEN_HEIGHT:
+        #             self.kill()
         else:
             self.bubble_frame_index+=0.1
             if self.bubble_frame_index>=len(bubble_animation):
@@ -144,10 +144,6 @@ class Bubble(pygame.sprite.Sprite):
         self.rect.x+=self.direction.x
         self.direction.y+=self.gravity
         self.rect.y+=self.direction.y
-    
-    def pop_bounce(self):
-        self.direction.x=choice((-1,1))
-        self.direction.y=self.pop_bounce_speed
     
     def set_angle(self,angle):
         self.angle=angle
@@ -206,23 +202,48 @@ class Bubble(pygame.sprite.Sprite):
         self.animation()
         self.launch()
         self.loading()
-        self.dropped()
 
 class BubblePop(Bubble):
+    def __init__(self,asset,pos,color):
+        Bubble.__init__(self,asset,pos,color)
+        self.bubble_status='pop'
+        self.bubble_pop_frame_index=0
+        self.image=self.bubbles_status['pop'][self.bubble_pop_frame_index]
+        self.rect=self.image.get_rect(center=pos)
+    
+    def animation(self):
+        pop_animation=self.bubbles_status['pop']
+        self.bubble_pop_frame_index+=0.2
+        if self.bubble_pop_frame_index>=len(pop_animation):
+            self.bubble_pop_frame_index=0
+            self.kill()
+        self.image=pop_animation[int(self.bubble_pop_frame_index)]
+    
+    def update(self):
+        self.animation()
+
+class BubblePopped(Bubble):
     def __init__(self,asset,pos,color):
         Bubble.__init__(self,asset,pos,color)
         self.bubble_status='popped'
         self.bubble_popped_frame_index=0
         self.image=self.bubbles_status['popped'][self.bubble_popped_frame_index]
         self.rect=self.image.get_rect(center=pos)
+        self.pop_bounce()
     
     def animation(self):
         popped_animation=self.bubbles_status['popped']
-        self.bubble_popped_frame_index+=0.2
+        self.set_gravity()
+        self.bubble_popped_frame_index+=0.1
         if self.bubble_popped_frame_index>=len(popped_animation):
             self.bubble_popped_frame_index=0
-            self.kill()
+            if self.rect.top>=SCREEN_HEIGHT:
+                self.kill()
         self.image=popped_animation[int(self.bubble_popped_frame_index)]
+    
+    def pop_bounce(self):
+        self.direction.x=choice((-1,1))
+        self.direction.y=self.pop_bounce_speed
     
     def update(self):
         self.animation()
