@@ -23,6 +23,11 @@ class GuidePoint(pygame.sprite.Sprite):
         self.rect.x+=x
         self.rect.y-=y
         
+        # if self.rect.left<=STAGE_LEFT:
+        #     self.rect.left=STAGE_LEFT
+        #     self.set_angle(180-self.angle)
+        # elif  self.rect.right>=STAGE_RIGHT:
+        #     self.rect.right=STAGE_RIGHT
         if self.rect.centerx<=STAGE_LEFT+BUBBLE_WIDTH//2:
             self.rect.left=STAGE_LEFT+BUBBLE_WIDTH//2
             self.set_angle(180-self.angle)

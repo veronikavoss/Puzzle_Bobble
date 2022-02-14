@@ -155,7 +155,8 @@ class Launcher:
         return bubble.color
     
     def create_bubble(self):
-        self.next_bubble.add(Bubble(self.asset,(GRID_CELL_SIZE*12,GRID_CELL_SIZE*25),self.choice_bubble_color(),create=True))
+        if self.bubble_sprite:
+            self.next_bubble.add(Bubble(self.asset,(GRID_CELL_SIZE*12,GRID_CELL_SIZE*25),self.choice_bubble_color(),create=True))
     
     def character1_delay_timer(self):
         self.character1_update_time=pygame.time.get_ticks()

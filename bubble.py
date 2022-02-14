@@ -202,6 +202,7 @@ class Bubble(pygame.sprite.Sprite):
         self.animation()
         self.launch()
         self.loading()
+        self.dropped()
 
 class BubblePop(Bubble):
     def __init__(self,asset,pos,color):
@@ -253,5 +254,5 @@ class BubbleCell(pygame.sprite.Sprite):
         super().__init__()
         self.index=index
         self.image=pygame.Surface((BUBBLE_SIZE),pygame.SRCALPHA)
-        self.image.fill((255,255,255,0))
+        self.image.fill((255,255,255,100))
         self.rect=self.image.get_rect(topleft=topleft)

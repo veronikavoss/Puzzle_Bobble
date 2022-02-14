@@ -143,6 +143,9 @@ class Asset:
         self.guide_point_images=[]
         for y in range(2):
             for x in range(4):
+                # surface=pygame.Surface((16,16),pygame.SRCALPHA)
+                # surface.blit(self.general_sheet,(4,4),(9*x+1041,9*y+1761,8,8))
+                # surface=pygame.transform.scale(surface,(16*SCALE,16*SCALE))
                 surface=pygame.Surface((8,8))
                 surface.blit(self.general_sheet,(0,0),(9*x+1041,9*y+1761,8,8))
                 surface=pygame.transform.scale(surface,(8*SCALE,8*SCALE))

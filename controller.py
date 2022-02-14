@@ -124,13 +124,12 @@ class Controller:
         self.visit(row_index,column_index,color)
         if len(self.visited)>=3:
             self.remove_popped_bubbles()
-            # self.remove_dropped_bubbles()
+            self.remove_dropped_bubbles()
     
     def remove_popped_bubbles(self):
         for bubble in self.launcher_sprite.bubble_sprite.sprites():
             if bubble.index in self.visited:
                 self.level_data.levels[f'level_{self.level+1}'][bubble.index[0]][bubble.index[1]]='_'
-                # bubble.pop_bounce()
                 self.bubble_popped.add(BubblePop(self.asset,bubble.rect.center,bubble.color))
                 self.bubble_popped.add(BubblePopped(self.asset,bubble.rect.center,bubble.color))
                 self.launcher_sprite.bubble_sprite.remove(bubble)
@@ -140,17 +139,32 @@ class Controller:
         for column_index in range(STAGE_COLUMN):
             if self.level_data.levels[f'level_{self.level+1}'][0][column_index]!='_':
                 self.visit(0,column_index)
-                print(self.level_data.levels[f'level_{self.level+1}'])
-                print(self.visited)
-                self.drop_bubbles()
+                # print(self.level_data.levels[f'level_{self.level+1}'])
+                # print(self.visited,'len'+'{}'.format(len(self.visited)))
+        self.drop_bubbles()
     
     def drop_bubbles(self):
-        for bubble in self.launcher_sprite.bubble_sprite.sprites():
-            if bubble.index not in self.visited:
-                bubble.drop=True
-                self.level_data.levels[f'level_{self.level+1}'][bubble.index[0]][bubble.index[1]]='_'
-                # bubble.dropped()
-                # bubble.kill()
+        db=[b for b in self.launcher_sprite.bubble_sprite.sprites() if b.index not in self.visited]
+        # for bubble in self.launcher_sprite.bubble_sprite.sprites():
+            # print(bubble.index,'len'+'{}'.format(len(self.launcher_sprite.bubble_sprite.sprites())))
+            # if bubble.index not in self.visited:
+                # print(bubble.index)
+                # db.append(bubble)
+        for b in db:
+            self.level_data.levels[f'level_{self.level+1}'][b.index[0]][b.index[1]]='_'
+            b.drop=True
+            print(self.level_data.levels[f'level_{self.level+1}'])
+        if not self.launcher_sprite.bubble_sprite:
+            self.next_level()
+        #         db.append(bubble)
+        # for b in db:
+        #     print(b.index,b)
+            # self.level_data.levels[f'level_{self.level+1}'][b.index[0]][b.index[1]]='_'
+            # b.drop=True
+            # self.launcher_sprite.bubble_sprite.remove(bubble)
+            # bubble.dropped()
+            # bubble.kill()
+        
     
     def bubbles_collision(self):
         load_bubble=self.launcher_sprite.load_bubble.sprite
