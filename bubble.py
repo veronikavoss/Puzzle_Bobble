@@ -137,8 +137,8 @@ class Bubble(pygame.sprite.Sprite):
         if self.drop and self.rect.top<SCREEN_HEIGHT:
             self.set_gravity()
             if self.rect.top>=SCREEN_HEIGHT:
-                self.kill()
                 self.drop=False
+                self.kill()
     
     def set_gravity(self):
         self.rect.x+=self.direction.x

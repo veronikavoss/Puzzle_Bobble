@@ -141,7 +141,8 @@ class Launcher:
         self.angle+=self.speed
     
     def launch_bubble(self):
-        if not self.load_bubble.sprite.launched and self.load_bubble.sprite.load and not self.character1_status=='character1_blowing':
+        if not self.load_bubble.sprite.launched and self.load_bubble.sprite.load and not self.character1_status=='character1_blowing' and \
+            self.load_bubble.sprite.drop==False:
             self.character1_status='character1_blowing'
             self.character1_animation_speed=0.15
             self.pipe=True
@@ -299,5 +300,6 @@ class Launcher:
             ])
         if self.character1_status=='character1_hurry_up':
             screen.blit(self.hurry_up_countdown_image,self.hurry_up_countdown_image_rect)
+        print(self.bubble_sprite)
         
         # print(self.character1_status,self.current_time)

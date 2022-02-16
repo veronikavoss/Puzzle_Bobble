@@ -22,6 +22,7 @@ class Controller:
         self.playing_game=False
         self.round_start=False
         self.round_update_time=0
+        self.cell_index=[]
         self.visited=[]
         
         self.font_type='all_font' # all_font, number, alphabet
@@ -34,6 +35,9 @@ class Controller:
     
     def next_level(self):
         self.launcher_sprite=Launcher(self.asset)
+        self.launcher_sprite.bubble_sprite.empty()
+        self.launcher_sprite.load_bubble.empty()
+        self.launcher_sprite.next_bubble.empty()
         self.level+=1
         
         self.round_start=True
@@ -41,10 +45,14 @@ class Controller:
         
         for row,data in enumerate(self.level_data.levels[f'level_{self.level+1}']):
             for column,bubble in enumerate(data):
-                self.bubble_cell.add(BubbleCell(self.set_bubble_position(row,column),(row,column)))
-                if bubble!='_':
+                if bubble!='/':
+                    self.bubble_cell.add(BubbleCell(self.set_bubble_position(row,column),(row,column)))
+                if bubble!='_' and bubble!='/':
                     self.launcher_sprite.bubble_sprite.add(Bubble(self.asset,self.set_bubble_position(row,column),bubble,index=(row,column)))
         
+        self.create_start_launch_bubble()
+    
+    def create_start_launch_bubble(self):
         self.launcher_sprite.load_bubble.add(Bubble(
             self.asset,(GRID_CELL_SIZE*19,GRID_CELL_SIZE*23),self.launcher_sprite.choice_bubble_color()))
         
@@ -78,23 +86,6 @@ class Controller:
                     font=self.asset.green_font_images['all_font'][font_index]
                     self.screen.blit(font,(x,y))
     
-    def set_bubble_position(self,row,column):
-        if row%2==0:
-            x=column*BUBBLE_WIDTH+STAGE_LEFT
-            y=row*BUBBLE_HEIGHT+STAGE_TOP-(BUBBLE_HEIGHT//8*row)
-        elif row%2!=0:
-            x=column*BUBBLE_WIDTH+(STAGE_LEFT+BUBBLE_WIDTH//2)
-            y=row*BUBBLE_HEIGHT+STAGE_TOP-(BUBBLE_HEIGHT//8*row)
-        
-        return x,y
-    
-    def get_map_index(self):
-        for cell in self.bubble_cell:
-            if cell.rect.collidepoint(self.launcher_sprite.load_bubble.sprite.rect.center):
-                column_index=cell.index[0]
-                row_index=cell.index[1]
-                return column_index,row_index
-    
     def visit(self,row_index,column_index,color=None):
         if row_index<0 or row_index>=STAGE_ROW or column_index<0 or column_index>=STAGE_COLUMN:
             return
@@ -102,7 +93,7 @@ class Controller:
         if color and self.level_data.levels[f'level_{self.level+1}'][row_index][column_index]!=color:
             return
         
-        if self.level_data.levels[f'level_{self.level+1}'][row_index][column_index]=='_':
+        if self.level_data.levels[f'level_{self.level+1}'][row_index][column_index] in ['_','/']:
             return
         
         if (row_index,column_index) in self.visited:
@@ -127,7 +118,7 @@ class Controller:
             self.remove_dropped_bubbles()
     
     def remove_popped_bubbles(self):
-        for bubble in self.launcher_sprite.bubble_sprite.sprites():
+        for bubble in self.launcher_sprite.bubble_sprite:
             if bubble.index in self.visited:
                 self.level_data.levels[f'level_{self.level+1}'][bubble.index[0]][bubble.index[1]]='_'
                 self.bubble_popped.add(BubblePop(self.asset,bubble.rect.center,bubble.color))
@@ -139,39 +130,51 @@ class Controller:
         for column_index in range(STAGE_COLUMN):
             if self.level_data.levels[f'level_{self.level+1}'][0][column_index]!='_':
                 self.visit(0,column_index)
-                # print(self.level_data.levels[f'level_{self.level+1}'])
-                # print(self.visited,'len'+'{}'.format(len(self.visited)))
         self.drop_bubbles()
     
     def drop_bubbles(self):
-        db=[b for b in self.launcher_sprite.bubble_sprite.sprites() if b.index not in self.visited]
-        # for bubble in self.launcher_sprite.bubble_sprite.sprites():
-            # print(bubble.index,'len'+'{}'.format(len(self.launcher_sprite.bubble_sprite.sprites())))
-            # if bubble.index not in self.visited:
-                # print(bubble.index)
-                # db.append(bubble)
+        db=[b for b in self.launcher_sprite.bubble_sprite if b.index not in self.visited]
         for b in db:
             self.level_data.levels[f'level_{self.level+1}'][b.index[0]][b.index[1]]='_'
             b.drop=True
-            print(self.level_data.levels[f'level_{self.level+1}'])
+            # self.cell_index.clear()
+            # print(self.level_data.levels[f'level_{self.level+1}'])
+            # self.round_clear()
+    
+    def round_clear(self):
         if not self.launcher_sprite.bubble_sprite:
-            self.next_level()
-        #         db.append(bubble)
-        # for b in db:
-        #     print(b.index,b)
-            # self.level_data.levels[f'level_{self.level+1}'][b.index[0]][b.index[1]]='_'
-            # b.drop=True
-            # self.launcher_sprite.bubble_sprite.remove(bubble)
-            # bubble.dropped()
-            # bubble.kill()
+            self.launcher_sprite.character1_status='character1_clear'
+            self.launcher_sprite.character2_status='character2_clear'
+            self.cell_index.clear()
+            # self.next_level()
+    
+    def set_bubble_position(self,row,column):
+        if row%2==0:
+            x=column*BUBBLE_WIDTH+STAGE_LEFT
+            y=row*BUBBLE_HEIGHT+STAGE_TOP-(BUBBLE_HEIGHT//8*row)
+        elif row%2!=0:
+            x=column*BUBBLE_WIDTH+(STAGE_LEFT+BUBBLE_WIDTH//2)
+            y=row*BUBBLE_HEIGHT+STAGE_TOP-(BUBBLE_HEIGHT//8*row)
         
+        return x,y
+    
+    def get_map_index(self):
+        for cell in self.bubble_cell:
+            if cell.rect.collidepoint(self.launcher_sprite.load_bubble.sprite.rect.center):
+                row_index=cell.index[0]
+                column_index=cell.index[1]
+                self.cell_index.append((row_index,column_index))
+                # return column_index,row_index
+        if self.cell_index:
+            del self.cell_index[:-1]
+            return self.cell_index[0]
     
     def bubbles_collision(self):
         load_bubble=self.launcher_sprite.load_bubble.sprite
         
         bubble_n_bubble_collide=pygame.sprite.spritecollideany(load_bubble,self.launcher_sprite.bubble_sprite,pygame.sprite.collide_mask)
         ceiling_collide_bubble=pygame.sprite.spritecollideany(load_bubble,self.launcher_sprite.borders_sprite,pygame.sprite.collide_mask)
-        
+        print(self.get_map_index())
         if (bubble_n_bubble_collide and bubble_n_bubble_collide.bubble_status!='pop') or ceiling_collide_bubble:
             row_index,column_index=self.get_map_index()
             self.level_data.levels[f'level_{self.level+1}'][row_index][column_index]=load_bubble.color
@@ -182,6 +185,7 @@ class Controller:
             self.remove_bubbles(row_index,column_index,load_bubble.color)
             self.launcher_sprite.load_bubble.sprite.launched=False
             self.launcher_sprite.load_bubble.add(self.launcher_sprite.next_bubble)
+            print(self.launcher_sprite.bubble_sprite)
             self.launcher_sprite.create_bubble()
         
         if pygame.sprite.collide_mask(load_bubble,self.launcher_sprite.borders_sprite.sprite):
@@ -235,6 +239,7 @@ class Controller:
             self.bubbles_collision()
             self.bubble_popped.update()
             self.check_index()
+            self.round_clear()
     
     def draw(self):
         if self.start_screen:
@@ -250,3 +255,4 @@ class Controller:
         # else:
         #     self.screen.fill('black')
         #     self.draw_text()
+        
