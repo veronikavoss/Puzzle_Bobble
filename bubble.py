@@ -26,7 +26,6 @@ class Bubble(pygame.sprite.Sprite):
         self.radius=18
         self.gravity=0.5
         self.pop_bounce_speed=-12
-        self.drop=False
     
     def red_bubble(self,color):
         if self.bubble_status=='idle':
@@ -133,13 +132,6 @@ class Bubble(pygame.sprite.Sprite):
         
         self.image=bubble_animation[int(self.bubble_frame_index)]
     
-    def dropped(self):
-        if self.drop and self.rect.top<SCREEN_HEIGHT:
-            self.set_gravity()
-            if self.rect.top>=SCREEN_HEIGHT:
-                self.drop=False
-                self.kill()
-    
     def set_gravity(self):
         self.rect.x+=self.direction.x
         self.direction.y+=self.gravity
@@ -202,7 +194,6 @@ class Bubble(pygame.sprite.Sprite):
         self.animation()
         self.launch()
         self.loading()
-        self.dropped()
 
 class BubblePop(Bubble):
     def __init__(self,asset,pos,color):
@@ -248,6 +239,20 @@ class BubblePopped(Bubble):
     
     def update(self):
         self.animation()
+
+class BubbleDrop(Bubble):
+    def __init__(self,asset,pos,color):
+        Bubble.__init__(self,asset,pos,color)
+        self.rect=self.image.get_rect(center=pos)
+    
+    def dropped(self):
+        self.set_gravity()
+        if self.rect.top>=SCREEN_HEIGHT:
+            self.kill()
+    
+    def update(self):
+        self.animation()
+        self.dropped()
 
 class BubbleCell(pygame.sprite.Sprite):
     def __init__(self,topleft,index):

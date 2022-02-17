@@ -2,7 +2,7 @@ from setting import *
 from start_screen import StartScreen
 from level import Level
 from launcher import Launcher
-from bubble import Bubble, BubbleCell, BubblePop, BubblePopped
+from bubble import *
 from random import choice
 
 class Controller:
@@ -133,10 +133,12 @@ class Controller:
         self.drop_bubbles()
     
     def drop_bubbles(self):
-        db=[b for b in self.launcher_sprite.bubble_sprite if b.index not in self.visited]
-        for b in db:
-            self.level_data.levels[f'level_{self.level+1}'][b.index[0]][b.index[1]]='_'
-            b.drop=True
+        drop_bubbles=[b for b in self.launcher_sprite.bubble_sprite if b.index not in self.visited]
+        for bubble in drop_bubbles:
+            self.level_data.levels[f'level_{self.level+1}'][bubble.index[0]][bubble.index[1]]='_'
+            self.launcher_sprite.bubble_sprite.remove(bubble)
+            self.bubble_popped.add(BubbleDrop(self.asset,bubble.rect.center,bubble.color))
+            
             # self.cell_index.clear()
             # print(self.level_data.levels[f'level_{self.level+1}'])
             # self.round_clear()

@@ -141,8 +141,7 @@ class Launcher:
         self.angle+=self.speed
     
     def launch_bubble(self):
-        if not self.load_bubble.sprite.launched and self.load_bubble.sprite.load and not self.character1_status=='character1_blowing' and \
-            self.load_bubble.sprite.drop==False:
+        if not self.load_bubble.sprite.launched and self.load_bubble.sprite.load and not self.character1_status=='character1_blowing':
             self.character1_status='character1_blowing'
             self.character1_animation_speed=0.15
             self.pipe=True
