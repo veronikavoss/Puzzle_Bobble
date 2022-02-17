@@ -22,7 +22,7 @@ class Controller:
         self.playing_game=False
         self.round_start=False
         self.round_update_time=0
-        self.cell_index=[]
+        self.cell_index=pygame.sprite.GroupSingle()
         self.visited=[]
         
         self.font_type='all_font' # all_font, number, alphabet
@@ -145,8 +145,8 @@ class Controller:
         if not self.launcher_sprite.bubble_sprite:
             self.launcher_sprite.character1_status='character1_clear'
             self.launcher_sprite.character2_status='character2_clear'
-            self.cell_index.clear()
-            # self.next_level()
+            self.cell_index.empty()
+            self.next_level()
     
     def set_bubble_position(self,row,column):
         if row%2==0:
@@ -161,13 +161,14 @@ class Controller:
     def get_map_index(self):
         for cell in self.bubble_cell:
             if cell.rect.collidepoint(self.launcher_sprite.load_bubble.sprite.rect.center):
-                row_index=cell.index[0]
-                column_index=cell.index[1]
-                self.cell_index.append((row_index,column_index))
+                self.cell_index.add(cell)
+                # row_index=cell.index[0]
+                # column_index=cell.index[1]
+                # self.cell_index.append((row_index,column_index))
                 # return column_index,row_index
         if self.cell_index:
-            del self.cell_index[:-1]
-            return self.cell_index[0]
+            # del self.cell_index[:-1]
+            return self.cell_index.sprite.index
     
     def bubbles_collision(self):
         load_bubble=self.launcher_sprite.load_bubble.sprite
@@ -176,7 +177,8 @@ class Controller:
         ceiling_collide_bubble=pygame.sprite.spritecollideany(load_bubble,self.launcher_sprite.borders_sprite,pygame.sprite.collide_mask)
         print(self.get_map_index())
         if (bubble_n_bubble_collide and bubble_n_bubble_collide.bubble_status!='pop') or ceiling_collide_bubble:
-            row_index,column_index=self.get_map_index()
+            self.get_map_index()
+            row_index,column_index=self.cell_index.sprite.index
             self.level_data.levels[f'level_{self.level+1}'][row_index][column_index]=load_bubble.color
             self.launcher_sprite.load_bubble.sprite.set_rect(self.set_bubble_position(row_index,column_index))
             self.launcher_sprite.load_bubble.sprite.bubble_status='collide'
