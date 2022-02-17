@@ -16,14 +16,14 @@ class Launcher:
         self.character1_update_time=pygame.time.get_ticks()
         self.character2_update_time=pygame.time.get_ticks()
         self.hurry_up_update_time=pygame.time.get_ticks()
-        self.index=0
         self.character1_animation_speed=0.1
         self.character2_animation_speed=0.1
+        self.character_gravity=0
         
+        self.guide_point_index=0
+        self.guide_point_sprite=pygame.sprite.Group()
         self.load_bubble=pygame.sprite.GroupSingle()
         self.next_bubble=pygame.sprite.GroupSingle()
-        
-        self.guide_point_sprite=pygame.sprite.Group()
         self.bubble_sprite=pygame.sprite.Group()
         self.borders_sprite=pygame.sprite.GroupSingle(Border(self.asset))
     
@@ -86,6 +86,8 @@ class Launcher:
         self.character2_frame_index=0
         self.character2_image=self.character_1p_status[self.character2_status][self.character2_frame_index]
         self.character2_image_rect=self.character2_image.get_rect(bottomleft=(GRID_CELL_SIZE*22,SCREEN_HEIGHT-GRID_CELL_SIZE))
+        self.character2_x=-3
+        self.character2_image_flip=False
         
         self.character_2p_frame_index=0
         self.character_2p_image=self.character_2p_status['character_join'][self.character_2p_frame_index]
@@ -107,13 +109,13 @@ class Launcher:
     
     def guide_point_cooldown(self):
         self.update_time=pygame.time.get_ticks()
-        self.index+=1
-        if self.index>=8:
-            self.index=0
+        self.guide_point_index+=1
+        if self.guide_point_index>=8:
+            self.guide_point_index=0
     
     def set_guide_point(self):
         if self.current_time-self.update_time>=60:
-            self.guide_point=GuidePoint(self.asset,self.index)
+            self.guide_point=GuidePoint(self.asset,self.guide_point_index)
             self.guide_point.set_angle(self.angle)
             self.guide_point_sprite.add(self.guide_point)
             self.guide_point_cooldown()
@@ -185,14 +187,12 @@ class Launcher:
                 if self.character1_status=='character1_idle':
                     self.character1_animation_speed=0.1
                     self.character1_delay_animation()
-        # elif (self.current_time-self.hurry_up_update_time)//1000>=5:
-        #     self.character1_status=self.set_character1_delay()
         
         if self.speed!=0:
             self.character2_status='character2_work'
             self.character2_delay_timer()
         else:
-            if self.character2_status=='character2_delay1' or self.character2_status=='character2_delay2':
+            if self.character2_status=='character2_delay1' or self.character2_status=='character2_delay2' or self.character2_status=='character2_clear':
                 self.character2_animation_speed=0.1
             else:
                 self.character2_status='character2_idle'
@@ -248,6 +248,30 @@ class Launcher:
                 self.character2_status='character2_idle'
                 self.character2_delay_animation()
         
+        if self.character1_status=='character1_clear':
+            self.character1_animation_speed=0.2
+            self.character_gravity+=0.2
+            self.character1_image_rect.move_ip(0,self.character_gravity)
+            if self.character1_image_rect.bottom>=SCREEN_HEIGHT-GRID_CELL_SIZE:
+                self.character1_image_rect.bottom=SCREEN_HEIGHT-GRID_CELL_SIZE
+                self.character_gravity=-4
+            if self.character_gravity<0:
+                if self.character1_frame_index>=2:
+                    self.character1_frame_index=0
+            elif self.character_gravity>0 and self.character1_frame_index<2:
+                self.character1_frame_index=2
+                if self.character1_frame_index>=4:
+                    self.character1_frame_index=0
+        if self.character2_status=='character2_clear':
+            self.character2_animation_speed=0.1
+            self.character2_image_rect.move_ip(self.character2_x,0)
+            if self.character2_image_rect.left<=GRID_CELL_SIZE*21:
+                self.character2_x=3
+                self.character2_image_flip=True
+            elif self.character2_image_rect.right>=GRID_CELL_SIZE*27:
+                self.character2_x=-3
+                self.character2_image_flip=False
+        
         self.character_2p_frame_index+=0.1 # 2p blue character
         if self.character_2p_frame_index>=len(character_2p_animation):
             self.character_2p_frame_index=0
@@ -261,6 +285,7 @@ class Launcher:
         self.character1_image=character1_1p_animation[int(self.character1_frame_index)]
         self.hurry_up_countdown_image=hurry_up_animation[int(self.hurry_up_countdown_frame_index)]
         self.character2_image=character2_1p_animation[int(self.character2_frame_index)]
+        self.character2_image=pygame.transform.flip(self.character2_image,self.character2_image_flip,False)
         self.character_2p_image=character_2p_animation[int(self.character_2p_frame_index)]
     
     def update(self,level):
@@ -299,6 +324,5 @@ class Launcher:
             ])
         if self.character1_status=='character1_hurry_up':
             screen.blit(self.hurry_up_countdown_image,self.hurry_up_countdown_image_rect)
-        print(self.bubble_sprite)
         
         # print(self.character1_status,self.current_time)

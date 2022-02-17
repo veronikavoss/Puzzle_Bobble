@@ -36,10 +36,10 @@ class Level:
     def __init__(self):
         self.levels={
             'level_1':[
-                list('RRYYBBGG'),
-                list('RRYYBBG/'),
-                list('BBGGRRYY'),
-                list('BGGRRYY/'),
+                list('__YY____'),
+                list('_______/'),
+                list('________'),
+                list('_______/'),
                 list('________'),
                 list('_______/'),
                 list('________'),
@@ -47,6 +47,17 @@ class Level:
                 list('________'),
                 list('_______/'),
                 list('________')],
+                # list('RRYYBBGG'),
+                # list('RRYYBBG/'),
+                # list('BBGGRRYY'),
+                # list('BGGRRYY/'),
+                # list('________'),
+                # list('_______/'),
+                # list('________'),
+                # list('_______/'),
+                # list('________'),
+                # list('_______/'),
+                # list('________')],
             'level_2':[
                 list('___LL___'),
                 list('___P___/'),
