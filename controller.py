@@ -20,7 +20,7 @@ class Controller:
         self.bubble_popped=pygame.sprite.Group()
         
         self.playing_game=False
-        self.round_start=False
+        # self.round_start=False
         self.round_update_time=0
         self.cell_index=pygame.sprite.GroupSingle()
         self.visited=[]
@@ -39,7 +39,6 @@ class Controller:
         self.launcher_sprite.next_bubble.empty()
         self.level+=1
         
-        self.round_start=True
         self.start_round_timer()
         
         for row,data in enumerate(self.level_data.levels[f'level_{self.level+1}']):
@@ -62,12 +61,14 @@ class Controller:
         self.round_update_time=pygame.time.get_ticks()
     
     def popup_round_board(self):
-        if self.round_start:
+        if not self.launcher_sprite.playing:
             if (self.current_time-self.round_update_time)//100<20:
                 # round_board_image
                 self.round_board_image=self.asset.round_board
                 self.round_board_image_rect=self.round_board_image.get_rect(topleft=(GRID_CELL_SIZE*12,GRID_CELL_SIZE*6))
                 self.screen.blit(self.round_board_image,self.round_board_image_rect)
+            else:
+                self.launcher_sprite.playing=True
                 
                 # round_board_text_image
                 round_text=[list('ROUND'),list(f'{self.level+1:0>2}')]

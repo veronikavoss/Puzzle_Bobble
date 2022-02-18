@@ -9,6 +9,7 @@ class Launcher:
         self.asset=asset
         self.status='idle'
         self.get_images()
+        self.playing=False
         
         self.speed=0
         self.angle=90
@@ -131,19 +132,23 @@ class Launcher:
     
     def set_key_input(self):
         key_input=pygame.key.get_pressed()
-        if key_input[pygame.K_LEFT] and self.angle<=175:
-            self.speed=1
-        elif key_input[pygame.K_RIGHT] and self.angle>=5:
-            self.speed=-1
-        else:
-            self.speed=0
-        if key_input[pygame.K_SPACE]:
-            self.launch_bubble()
+        if not self.character1_status=='character1_clear':
+            if key_input[pygame.K_LEFT] and self.angle<=175:
+                self.speed=1
+            elif key_input[pygame.K_RIGHT] and self.angle>=5:
+                self.speed=-1
+            else:
+                self.speed=0
+            if key_input[pygame.K_SPACE]:
+                self.launch_bubble()
         
         self.angle+=self.speed
     
     def launch_bubble(self):
-        if not self.load_bubble.sprite.launched and self.load_bubble.sprite.load and not self.character1_status=='character1_blowing':
+        if self.playing and \
+        not self.load_bubble.sprite.launched and \
+        self.load_bubble.sprite.load and \
+        not self.character1_status=='character1_blowing':
             self.character1_status='character1_blowing'
             self.character1_animation_speed=0.15
             self.pipe=True
@@ -324,5 +329,4 @@ class Launcher:
             ])
         if self.character1_status=='character1_hurry_up':
             screen.blit(self.hurry_up_countdown_image,self.hurry_up_countdown_image_rect)
-        
         # print(self.character1_status,self.current_time)
