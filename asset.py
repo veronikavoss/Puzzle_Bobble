@@ -268,9 +268,9 @@ class Asset:
     
     def get_sound(self):
         pygame.mixer.music.load(os.path.join(SOUND_PATH,'SinglePlayerMusic.ogg'))
-        pygame.mixer.music.set_volume(MUSIC_VOLUME-0.5)
+        pygame.mixer.music.set_volume(MUSIC_VOLUME-0.7)
         self.launch_sound=pygame.mixer.Sound(os.path.join(SOUND_PATH,'BubbleShot.wav'))
-        self.launch_sound.set_volume(SFX_VOLUME-0.5)
+        self.launch_sound.set_volume(SFX_VOLUME-0.7)
         self.collide_sound=pygame.mixer.Sound(os.path.join(SOUND_PATH,'BallBounce.wav'))
         self.collide_sound.set_volume(SFX_VOLUME-0.5)
         self.pop_sound=pygame.mixer.Sound(os.path.join(SOUND_PATH,'BallsElimination.wav'))
@@ -279,5 +279,7 @@ class Asset:
         self.ready_sound.set_volume(SFX_VOLUME-0.9)
         self.go_sound=pygame.mixer.Sound(os.path.join(SOUND_PATH,'go.wav'))
         self.go_sound.set_volume(SFX_VOLUME-0.7)
+        self.round_clear_sound=pygame.mixer.Sound(os.path.join(SOUND_PATH,'StageClear.ogg'))
+        self.round_clear_sound.set_volume(SFX_VOLUME-0.7)
         self.dead_sound=pygame.mixer.Sound(os.path.join(SOUND_PATH,'ExtraBallsElimination.wav'))
         self.dead_sound.set_volume(SFX_VOLUME-0.7)

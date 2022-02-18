@@ -20,7 +20,6 @@ class Controller:
         self.bubble_popped=pygame.sprite.Group()
         
         self.playing_game=False
-        # self.round_start=False
         self.round_update_time=0
         self.cell_index=pygame.sprite.GroupSingle()
         self.visited=[]
@@ -120,7 +119,9 @@ class Controller:
         if len(self.visited)>=3:
             self.remove_popped_bubbles()
             self.remove_dropped_bubbles()
-    
+            if not self.launcher_sprite.bubble_sprite:
+                self.round_clear()
+        
     def remove_popped_bubbles(self):
         for bubble in self.launcher_sprite.bubble_sprite:
             if bubble.index in self.visited:
@@ -146,18 +147,25 @@ class Controller:
             self.bubble_popped.add(BubbleDrop(self.asset,bubble.rect.center,bubble.color))
     
     def round_clear(self):
-        if not self.launcher_sprite.bubble_sprite:
-            self.launcher_sprite.character1_status='character1_clear'
-            self.launcher_sprite.character2_status='character2_clear'
-            self.launcher_sprite.bubble_sprite.empty()
-            # if not self.launcher_sprite.load_bubble and self.launcher_sprite.next_bubble.sprite:
-                # self.bubble_popped.add(BubblePop(self.asset,self.launcher_sprite.next_bubble.sprite.rect.center,self.launcher_sprite.next_bubble.sprite.color))
-                # self.launcher_sprite.next_bubble.empty()
-            # elif self.launcher_sprite.load_bubble:
-                # self.bubble_popped.add(BubblePop(self.asset,self.launcher_sprite.load_bubble.sprite.rect.center,self.launcher_sprite.load_bubble.sprite.color))
-                # self.launcher_sprite.load_bubble.empty()
-            self.cell_index.empty()
-            # self.next_level()
+        self.launcher_sprite.character1_status='character1_clear'
+        self.launcher_sprite.character2_status='character2_clear'
+        self.start_round_timer()
+        pygame.mixer.music.stop()
+        self.asset.pop_sound.stop()
+        self.asset.round_clear_sound.play()
+        self.launcher_sprite.bubble_sprite.empty()
+        # if not self.launcher_sprite.load_bubble and self.launcher_sprite.next_bubble.sprite:
+            # self.bubble_popped.add(BubblePop(self.asset,self.launcher_sprite.next_bubble.sprite.rect.center,self.launcher_sprite.next_bubble.sprite.color))
+            # self.launcher_sprite.next_bubble.empty()
+        # elif self.launcher_sprite.load_bubble:
+            # self.bubble_popped.add(BubblePop(self.asset,self.launcher_sprite.load_bubble.sprite.rect.center,self.launcher_sprite.load_bubble.sprite.color))
+            # self.launcher_sprite.load_bubble.empty()
+        self.cell_index.empty()
+    
+    def next_round(self):
+        if self.launcher_sprite.character1_status=='character1_clear':
+            if (self.current_time-self.round_update_time)//100==50:
+                self.next_level()
     
     def set_bubble_position(self,row,column):
         if row%2==0:
@@ -250,8 +258,8 @@ class Controller:
             self.launcher_sprite.next_bubble.update()
             self.bubbles_collision()
             self.bubble_popped.update()
+            self.next_round()
             self.check_index()
-            self.round_clear()
     
     def draw(self):
         if self.start_screen:
@@ -267,4 +275,3 @@ class Controller:
         # else:
         #     self.screen.fill('black')
         #     self.draw_text()
-        
