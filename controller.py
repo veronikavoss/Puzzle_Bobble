@@ -62,6 +62,7 @@ class Controller:
     
     def popup_round_board(self):
         if not self.launcher_sprite.playing:
+            pygame.mixer.music.play()
             if (self.current_time-self.round_update_time)//100<20:
                 self.asset.ready_sound.play()
                 # round_board_image
