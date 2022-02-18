@@ -12,6 +12,7 @@ class Asset:
         self.get_background_n_Borders_image()
         self.get_launcher_image()
         self.get_bubble_image()
+        self.get_sound()
     
     def get_font_n_ui_image(self):
         # info_font_images
@@ -265,5 +266,16 @@ class Asset:
                 surface.set_colorkey((147,187,236))
                 self.bubbles_dead_image.append(surface)
     
-    # 320,224
-    # 320 672 1000 16
+    def get_sound(self):
+        self.launch_sound=pygame.mixer.Sound(os.path.join(SOUND_PATH,'launch.wav'))
+        self.launch_sound.set_volume(SFX_VOLUME-0.5)
+        self.collide_sound=pygame.mixer.Sound(os.path.join(SOUND_PATH,'collide.wav'))
+        self.collide_sound.set_volume(SFX_VOLUME-0.5)
+        self.pop_sound=pygame.mixer.Sound(os.path.join(SOUND_PATH,'pop.wav'))
+        self.pop_sound.set_volume(SFX_VOLUME-0.9)
+        self.ready_sound=pygame.mixer.Sound(os.path.join(SOUND_PATH,'ready.wav'))
+        self.ready_sound.set_volume(SFX_VOLUME-0.9)
+        self.go_sound=pygame.mixer.Sound(os.path.join(SOUND_PATH,'go.wav'))
+        self.go_sound.set_volume(SFX_VOLUME-0.7)
+        self.dead_sound=pygame.mixer.Sound(os.path.join(SOUND_PATH,'dead.wav'))
+        self.dead_sound.set_volume(SFX_VOLUME-0.7)

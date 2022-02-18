@@ -150,6 +150,7 @@ class Launcher:
         self.load_bubble.sprite.load and \
         not self.character1_status=='character1_blowing':
             self.character1_status='character1_blowing'
+            self.asset.launch_sound.play()
             self.character1_animation_speed=0.15
             self.pipe=True
             self.load_bubble.sprite.set_angle(self.angle)
@@ -330,3 +331,4 @@ class Launcher:
         if self.character1_status=='character1_hurry_up':
             screen.blit(self.hurry_up_countdown_image,self.hurry_up_countdown_image_rect)
         # print(self.character1_status,self.current_time)
+        # print(self.asset.launch_sound)

@@ -63,12 +63,11 @@ class Controller:
     def popup_round_board(self):
         if not self.launcher_sprite.playing:
             if (self.current_time-self.round_update_time)//100<20:
+                self.asset.ready_sound.play()
                 # round_board_image
                 self.round_board_image=self.asset.round_board
                 self.round_board_image_rect=self.round_board_image.get_rect(topleft=(GRID_CELL_SIZE*12,GRID_CELL_SIZE*6))
                 self.screen.blit(self.round_board_image,self.round_board_image_rect)
-            else:
-                self.launcher_sprite.playing=True
                 
                 # round_board_text_image
                 round_text=[list('ROUND'),list(f'{self.level+1:0>2}')]
@@ -85,6 +84,10 @@ class Controller:
                     font_index=ord(text)-48
                     font=self.asset.green_font_images['all_font'][font_index]
                     self.screen.blit(font,(x,y))
+            else:
+                self.launcher_sprite.playing=True
+                self.asset.ready_sound.stop()
+                self.asset.go_sound.play()
     
     def visit(self,row_index,column_index,color=None):
         if row_index<0 or row_index>=STAGE_ROW or column_index<0 or column_index>=STAGE_COLUMN:
@@ -124,6 +127,8 @@ class Controller:
                 self.bubble_popped.add(BubblePop(self.asset,bubble.rect.center,bubble.color))
                 self.bubble_popped.add(BubblePopped(self.asset,bubble.rect.center,bubble.color))
                 self.launcher_sprite.bubble_sprite.remove(bubble)
+                self.asset.collide_sound.stop()
+                self.asset.pop_sound.play()
     
     def remove_dropped_bubbles(self):
         self.visited.clear()
@@ -186,6 +191,7 @@ class Controller:
             self.level_data.levels[f'level_{self.level+1}'][row_index][column_index]=load_bubble.color
             self.launcher_sprite.load_bubble.sprite.set_rect(self.set_bubble_position(row_index,column_index))
             self.launcher_sprite.load_bubble.sprite.bubble_status='collide'
+            self.asset.collide_sound.play()
             self.launcher_sprite.load_bubble.sprite.index=(row_index,column_index)
             self.launcher_sprite.bubble_sprite.add(self.launcher_sprite.load_bubble.sprite)
             self.remove_bubbles(row_index,column_index,load_bubble.color)
