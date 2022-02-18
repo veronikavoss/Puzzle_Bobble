@@ -151,9 +151,11 @@ class Bubble(pygame.sprite.Sprite):
             
             if self.rect.left<=STAGE_LEFT:
                 self.rect.left=STAGE_LEFT
+                self.asset.collide_sound.play()
                 self.set_angle(180-self.angle)
             elif  self.rect.right>=STAGE_RIGHT:
                 self.rect.right=STAGE_RIGHT
+                self.asset.collide_sound.play()
                 self.set_angle(180-self.angle)
     
     def loading(self):
