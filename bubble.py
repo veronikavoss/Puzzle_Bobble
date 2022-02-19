@@ -1,5 +1,5 @@
 from setting import *
-from random import choice
+from random import choice, randint
 import math
 
 class Bubble(pygame.sprite.Sprite):
@@ -196,6 +196,15 @@ class Bubble(pygame.sprite.Sprite):
         self.animation()
         self.launch()
         self.loading()
+    
+    def draw_bubble(self,screen,launch_count):
+        if launch_count==5:
+            x=randint(-1,1)
+        elif launch_count==6:
+            x=randint(-4,4)
+        else:
+            x=0
+        screen.blit(self.image,(self.rect.x+x,self.rect.y))
 
 class BubblePop(Bubble):
     def __init__(self,asset,pos,color):

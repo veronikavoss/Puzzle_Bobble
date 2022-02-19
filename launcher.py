@@ -20,6 +20,7 @@ class Launcher:
         self.character1_animation_speed=0.1
         self.character2_animation_speed=0.1
         self.character_gravity=0
+        self.launch_count=0
         
         self.guide_point_index=0
         self.guide_point_sprite=pygame.sprite.Group()
@@ -151,12 +152,18 @@ class Launcher:
         not self.character1_status=='character1_blowing':
             self.character1_status='character1_blowing'
             self.asset.launch_sound.play()
+            self.set_launch_count()
             self.character1_animation_speed=0.15
             self.pipe=True
             self.load_bubble.sprite.set_angle(self.angle)
             self.load_bubble.sprite.launched=True
             self.next_bubble.sprite.reload=True
             self.hurry_up_countdown_frame_index=0
+    
+    def set_launch_count(self):
+        self.launch_count+=1
+        if self.launch_count>7:
+            self.launch_count=1
     
     def choice_bubble_color(self):
         bubble=choice(self.bubble_sprite.sprites())
@@ -317,18 +324,24 @@ class Launcher:
             [self.character2_image,self.character2_image_rect],
             [self.character_2p_image,self.character_2p_image_rect]
             ])
+        
         self.guide_point_sprite.draw(screen)
-        self.bubble_sprite.draw(screen)
+        
+        for bubble in self.bubble_sprite.sprites():
+            bubble.draw_bubble(screen,self.launch_count)
         self.borders_sprite.draw(screen)
         if self.load_bubble.sprite:
             self.load_bubble.draw(screen)
         if self.next_bubble:
             self.next_bubble.draw(screen)
+        
         screen.blits([
             [self.borders_side_image,self.borders_side_image_rect],
             [self.bubbles_pocket_image2,self.bubbles_pocket_image_rect]
             ])
+        
         if self.character1_status=='character1_hurry_up':
             screen.blit(self.hurry_up_countdown_image,self.hurry_up_countdown_image_rect)
         # print(self.character1_status,self.current_time)
         # print(self.asset.launch_sound)
+        print(self.launch_count)
