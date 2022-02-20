@@ -154,7 +154,6 @@ class Launcher:
         not self.character1_status=='character1_blowing':
             self.character1_status='character1_blowing'
             self.asset.launch_sound.play()
-            self.set_launch_count()
             self.character1_animation_speed=0.15
             self.pipe=True
             self.load_bubble.sprite.set_angle(self.angle)

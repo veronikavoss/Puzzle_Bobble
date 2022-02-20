@@ -106,6 +106,7 @@ class Controller:
             self.remove_bubbles(row_index,column_index,load_bubble.color)
             self.launcher_sprite.load_bubble.sprite.launched=False
             self.launcher_sprite.load_bubble.add(self.launcher_sprite.next_bubble)
+            self.launcher_sprite.set_launch_count()
             self.launcher_sprite.create_bubble()
         
         if pygame.sprite.collide_mask(load_bubble,self.launcher_sprite.borders_sprite.sprite):
