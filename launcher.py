@@ -5,8 +5,9 @@ from borders import Border
 from random import choice
 
 class Launcher:
-    def __init__(self,asset):
+    def __init__(self,asset,level):
         self.asset=asset
+        self.level=level
         self.status='idle'
         self.get_images()
         self.playing=False
@@ -26,8 +27,9 @@ class Launcher:
         self.guide_point_sprite=pygame.sprite.Group()
         self.load_bubble=pygame.sprite.GroupSingle()
         self.next_bubble=pygame.sprite.GroupSingle()
+        self.bubble_cells=pygame.sprite.Group()
         self.bubble_sprite=pygame.sprite.Group()
-        self.borders_sprite=pygame.sprite.GroupSingle(Border(self.asset))
+        self.borders_sprite=pygame.sprite.GroupSingle(Border(self.asset,self.level))
     
     def set_character_images(self):
         self.character_1p_status={
@@ -162,8 +164,16 @@ class Launcher:
     
     def set_launch_count(self):
         self.launch_count+=1
-        if self.launch_count>7:
-            self.launch_count=1
+        if self.launch_count>6:
+            self.borders_sprite.sprite.ceiling_down+=1
+            self.move_the_bubbles_down()
+            self.launch_count=0
+    
+    def move_the_bubbles_down(self):
+        for bubble in self.bubble_sprite:
+            bubble.set_rect((bubble.rect.x,bubble.rect.y+(14*SCALE)))
+        for cell in self.bubble_cells:
+            cell.set_rect((cell.rect.x,cell.rect.y+(14*SCALE)))
     
     def choice_bubble_color(self):
         bubble=choice(self.bubble_sprite.sprites())
@@ -311,6 +321,7 @@ class Launcher:
         self.set_idle_status()
         self.animation()
         self.bubble_sprite.update()
+        self.borders_sprite.update()
     
     def draw(self,screen):
         screen.blits([
@@ -329,7 +340,7 @@ class Launcher:
         
         for bubble in self.bubble_sprite.sprites():
             bubble.draw_bubble(screen,self.launch_count)
-        self.borders_sprite.draw(screen)
+        self.borders_sprite.sprite.draw(screen)
         if self.load_bubble.sprite:
             self.load_bubble.draw(screen)
         if self.next_bubble:
@@ -344,4 +355,3 @@ class Launcher:
             screen.blit(self.hurry_up_countdown_image,self.hurry_up_countdown_image_rect)
         # print(self.character1_status,self.current_time)
         # print(self.asset.launch_sound)
-        print(self.launch_count)

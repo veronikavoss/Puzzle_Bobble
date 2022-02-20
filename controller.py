@@ -16,7 +16,7 @@ class Controller:
         self.start_screen_sprite=StartScreen(self.screen,self.asset)
         
         self.level_data=Level()
-        self.bubble_cell=pygame.sprite.Group()
+        # self.bubble_cell=pygame.sprite.Group()
         self.bubble_popped=pygame.sprite.Group()
         
         self.playing_game=False
@@ -33,18 +33,18 @@ class Controller:
             self.next_level()
     
     def next_level(self):
-        pygame.mixer.init()
-        self.launcher_sprite=Launcher(self.asset)
+        self.launcher_sprite=Launcher(self.asset,self.level)
         self.launcher_sprite.load_bubble.empty()
         self.launcher_sprite.next_bubble.empty()
         self.level+=1
+        pygame.mixer.music.play(-1)
         
         self.start_round_timer()
         
         for row,data in enumerate(self.level_data.levels[f'level_{self.level+1}']):
             for column,bubble in enumerate(data):
                 if bubble!='/':
-                    self.bubble_cell.add(BubbleCell(self.set_bubble_position(row,column),(row,column)))
+                    self.launcher_sprite.bubble_cells.add(BubbleCell(self.set_bubble_position(row,column),(row,column)))
                 if bubble!='_' and bubble!='/':
                     self.launcher_sprite.bubble_sprite.add(Bubble(self.asset,self.set_bubble_position(row,column),bubble,index=(row,column)))
         
@@ -62,7 +62,6 @@ class Controller:
     
     def popup_round_board(self):
         if not self.launcher_sprite.playing:
-            pygame.mixer.music.play(-1)
             if (self.current_time-self.round_update_time)//100<20:
                 self.asset.ready_sound.play()
                 # round_board_image
@@ -115,16 +114,21 @@ class Controller:
                 self.launcher_sprite.create_bubble()
     
     def get_map_index(self):
-        for cell in self.bubble_cell:
+        for cell in self.launcher_sprite.bubble_cells:
             if cell.rect.collidepoint(self.launcher_sprite.load_bubble.sprite.rect.center):
                 self.cell_index.add(cell)
-                # row_index=cell.index[0]
-                # column_index=cell.index[1]
-                # self.cell_index.append((row_index,column_index))
-                # return column_index,row_index
         if self.cell_index:
-            # del self.cell_index[:-1]
             return self.cell_index.sprite.index
+    
+    def set_bubble_position(self,row,column):
+        if row%2==0:
+            x=column*BUBBLE_WIDTH+STAGE_LEFT
+            y=row*BUBBLE_HEIGHT+STAGE_TOP+(self.launcher_sprite.borders_sprite.sprite.ceiling_down*(14*SCALE)-(BUBBLE_HEIGHT//8*row))
+        elif row%2!=0:
+            x=column*BUBBLE_WIDTH+(STAGE_LEFT+BUBBLE_WIDTH//2)
+            y=row*BUBBLE_HEIGHT+STAGE_TOP+(self.launcher_sprite.borders_sprite.sprite.ceiling_down*(14*SCALE)-(BUBBLE_HEIGHT//8*row))
+        
+        return x,y
     
     def visit(self,row_index,column_index,color=None):
         if row_index<0 or row_index>=STAGE_ROW or column_index<0 or column_index>=STAGE_COLUMN:
@@ -204,24 +208,15 @@ class Controller:
             if (self.current_time-self.round_update_time)//100==50:
                 self.next_level()
     
-    def set_bubble_position(self,row,column):
-        if row%2==0:
-            x=column*BUBBLE_WIDTH+STAGE_LEFT
-            y=row*BUBBLE_HEIGHT+STAGE_TOP-(BUBBLE_HEIGHT//8*row)
-        elif row%2!=0:
-            x=column*BUBBLE_WIDTH+(STAGE_LEFT+BUBBLE_WIDTH//2)
-            y=row*BUBBLE_HEIGHT+STAGE_TOP-(BUBBLE_HEIGHT//8*row)
-        
-        return x,y
-    
     def check_index(self):
         mouse_pos=pygame.mouse.get_pos()
         if self.launcher_sprite.load_bubble.sprite.rect.collidepoint(mouse_pos):
             print(self.launcher_sprite.load_bubble.sprite.load,self.launcher_sprite.load_bubble.sprite.launched)
         for bubble in self.launcher_sprite.bubble_sprite:
-            for cell in self.bubble_cell:
-                if bubble.rect.collidepoint(mouse_pos):
-                    print(bubble.rect,bubble.color,bubble.load,bubble.index)
+            for cell in self.launcher_sprite.bubble_cells:
+                if cell.rect.collidepoint(mouse_pos):
+                    # print(bubble.rect,bubble.color,bubble.load,bubble.index)
+                    print(cell.rect,cell.index)
     
     def draw_background(self):
         level=min(self.level//3,9)
@@ -268,7 +263,7 @@ class Controller:
             self.draw_text()
         elif not self.start_screen and self.playing_game:
             self.draw_background()
-            self.bubble_cell.draw(self.screen)
+            self.launcher_sprite.bubble_cells.draw(self.screen)
             self.launcher_sprite.draw(self.screen)
             self.bubble_popped.draw(self.screen)
             self.draw_text()

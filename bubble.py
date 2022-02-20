@@ -270,5 +270,8 @@ class BubbleCell(pygame.sprite.Sprite):
         super().__init__()
         self.index=index
         self.image=pygame.Surface((BUBBLE_SIZE),pygame.SRCALPHA)
-        self.image.fill((255,255,255,0))
+        self.image.fill((255,255,255,100))
+        self.rect=self.image.get_rect(topleft=topleft)
+    
+    def set_rect(self,topleft):
         self.rect=self.image.get_rect(topleft=topleft)
