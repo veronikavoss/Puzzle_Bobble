@@ -1,5 +1,5 @@
 from setting import *
-from random import choice, randint
+from random import choice
 import math
 
 class Bubble(pygame.sprite.Sprite):
@@ -110,7 +110,7 @@ class Bubble(pygame.sprite.Sprite):
         
         bubble_animation=self.bubbles_status[self.bubble_status]
         
-        if self.bubble_status=='idle':
+        if self.bubble_status=='idle' or self.bubble_status=='dead':
             if current_time-self.update_time>=self.delay_time:
                 self.delay_animation(bubble_animation)
         elif self.bubble_status=='collide':
@@ -118,13 +118,6 @@ class Bubble(pygame.sprite.Sprite):
             if self.bubble_frame_index>=len(bubble_animation):
                 self.bubble_frame_index=0
                 self.bubble_status='idle'
-        # elif self.bubble_status=='pop':
-        #     self.set_gravity()
-        #     self.bubble_frame_index+=0.1
-        #     if self.bubble_frame_index>=len(bubble_animation):
-        #         self.bubble_frame_index=0
-        #         if self.rect.top>=SCREEN_HEIGHT:
-        #             self.kill()
         else:
             self.bubble_frame_index+=0.1
             if self.bubble_frame_index>=len(bubble_animation):
@@ -199,9 +192,9 @@ class Bubble(pygame.sprite.Sprite):
     
     def draw_bubble(self,screen,launch_count):
         if launch_count==5:
-            x=randint(-1,1)
+            x=choice((-1,1))
         elif launch_count==6:
-            x=randint(-4,4)
+            x=choice((-2,2))
         else:
             x=0
         screen.blit(self.image,(self.rect.x+x,self.rect.y))

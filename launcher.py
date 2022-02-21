@@ -11,6 +11,7 @@ class Launcher:
         self.status='idle'
         self.get_images()
         self.playing=False
+        self.game_over=False
         
         self.speed=0
         self.angle=90

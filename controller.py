@@ -3,7 +3,6 @@ from start_screen import StartScreen
 from level import Level
 from launcher import Launcher
 from bubble import *
-from random import choice
 
 class Controller:
     def __init__(self,screen,asset):
@@ -19,6 +18,7 @@ class Controller:
         self.bubble_popped=pygame.sprite.Group()
         
         self.playing_game=False
+        self.game_over=False
         self.round_update_time=0
         self.cell_index=pygame.sprite.GroupSingle()
         self.visited=[]
@@ -114,6 +114,7 @@ class Controller:
             self.launcher_sprite.bubble_sprite.add(self.launcher_sprite.load_bubble.sprite)
             self.remove_bubbles(row_index,column_index,load_bubble.color)
             self.launcher_sprite.load_bubble.sprite.launched=False
+            # self.check_game_over()
             self.launcher_sprite.load_bubble.add(self.launcher_sprite.next_bubble)
             self.launcher_sprite.set_launch_count()
             self.launcher_sprite.create_bubble()
@@ -210,6 +211,18 @@ class Controller:
             if (self.current_time-self.round_update_time)//100==50:
                 self.round_start()
     
+    def check_game_over(self):
+        for bubble in self.launcher_sprite.bubble_sprite:
+            if bubble.index and bubble.rect.centery>STAGE_BOTTOM:
+                self.launcher_sprite.game_over=True
+                print('go')
+                # self.bubble_dead()
+    
+    def bubble_dead(self):
+        for bubble in self.launcher_sprite.bubble_sprite:
+            self.launcher_sprite.load_bubble.sprite.bubble_status='dead'
+            bubble.bubble_status='dead'
+    
     def check_index(self):
         mouse_pos=pygame.mouse.get_pos()
         if self.launcher_sprite.load_bubble.sprite.rect.collidepoint(mouse_pos):
@@ -257,6 +270,7 @@ class Controller:
             self.bubbles_collision()
             self.bubble_popped.update()
             self.next_round()
+            self.check_game_over()
             self.check_index()
     
     def draw(self):
