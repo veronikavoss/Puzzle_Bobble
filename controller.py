@@ -16,7 +16,6 @@ class Controller:
         self.start_screen_sprite=StartScreen(self.screen,self.asset)
         
         self.level_data=Level()
-        # self.bubble_cell=pygame.sprite.Group()
         self.bubble_popped=pygame.sprite.Group()
         
         self.playing_game=False
@@ -30,9 +29,9 @@ class Controller:
         if self.start_screen_sprite.count_time<=0:
             self.start_screen=False
             self.playing_game=True
-            self.next_level()
+            self.round_start()
     
-    def next_level(self):
+    def round_start(self):
         self.launcher_sprite=Launcher(self.asset,self.level)
         self.launcher_sprite.load_bubble.empty()
         self.launcher_sprite.next_bubble.empty()
@@ -49,6 +48,16 @@ class Controller:
                     self.launcher_sprite.bubble_sprite.add(Bubble(self.asset,self.set_bubble_position(row,column),bubble,index=(row,column)))
         
         self.create_start_launch_bubble()
+    
+    def set_bubble_position(self,row,column):
+        if row%2==0:
+            x=column*BUBBLE_WIDTH+STAGE_LEFT
+            y=row*BUBBLE_HEIGHT+STAGE_TOP+(self.launcher_sprite.borders_sprite.sprite.ceiling_down*(14*SCALE)-(BUBBLE_HEIGHT//8*row))
+        elif row%2!=0:
+            x=column*BUBBLE_WIDTH+(STAGE_LEFT+BUBBLE_WIDTH//2)
+            y=row*BUBBLE_HEIGHT+STAGE_TOP+(self.launcher_sprite.borders_sprite.sprite.ceiling_down*(14*SCALE)-(BUBBLE_HEIGHT//8*row))
+        
+        return x,y
     
     def create_start_launch_bubble(self):
         self.launcher_sprite.load_bubble.add(Bubble(
@@ -121,16 +130,6 @@ class Controller:
         if self.cell_index:
             return self.cell_index.sprite.index
     
-    def set_bubble_position(self,row,column):
-        if row%2==0:
-            x=column*BUBBLE_WIDTH+STAGE_LEFT
-            y=row*BUBBLE_HEIGHT+STAGE_TOP+(self.launcher_sprite.borders_sprite.sprite.ceiling_down*(14*SCALE)-(BUBBLE_HEIGHT//8*row))
-        elif row%2!=0:
-            x=column*BUBBLE_WIDTH+(STAGE_LEFT+BUBBLE_WIDTH//2)
-            y=row*BUBBLE_HEIGHT+STAGE_TOP+(self.launcher_sprite.borders_sprite.sprite.ceiling_down*(14*SCALE)-(BUBBLE_HEIGHT//8*row))
-        
-        return x,y
-    
     def visit(self,row_index,column_index,color=None):
         if row_index<0 or row_index>=STAGE_ROW or column_index<0 or column_index>=STAGE_COLUMN:
             return
@@ -170,6 +169,7 @@ class Controller:
                 self.level_data.levels[f'level_{self.level+1}'][bubble.index[0]][bubble.index[1]]='_'
                 self.bubble_popped.add(BubblePop(self.asset,bubble.rect.center,bubble.color))
                 self.bubble_popped.add(BubblePopped(self.asset,bubble.rect.center,bubble.color))
+                self.bubble_popped.add(BubblePopScore(self.asset,bubble.rect.center))
                 self.launcher_sprite.bubble_sprite.remove(bubble)
                 self.asset.collide_sound.stop()
                 self.asset.pop_sound.play()
@@ -187,6 +187,7 @@ class Controller:
             self.level_data.levels[f'level_{self.level+1}'][bubble.index[0]][bubble.index[1]]='_'
             self.launcher_sprite.bubble_sprite.remove(bubble)
             self.bubble_popped.add(BubbleDrop(self.asset,bubble.rect.center,bubble.color))
+            self.bubble_popped.add(BubblePopScore(self.asset,bubble.rect.center))
     
     def round_clear(self):
         self.launcher_sprite.character1_status='character1_clear'
@@ -207,7 +208,7 @@ class Controller:
     def next_round(self):
         if self.launcher_sprite.character1_status=='character1_clear':
             if (self.current_time-self.round_update_time)//100==50:
-                self.next_level()
+                self.round_start()
     
     def check_index(self):
         mouse_pos=pygame.mouse.get_pos()

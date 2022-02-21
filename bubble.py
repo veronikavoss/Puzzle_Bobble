@@ -265,12 +265,31 @@ class BubbleDrop(Bubble):
         self.animation()
         self.dropped()
 
+class BubblePopScore(pygame.sprite.Sprite):
+    def __init__(self,asset,pos):
+        super().__init__()
+        self.asset=asset
+        self.images=self.asset.score_images
+        self.image=self.images[1]
+        self.rect=self.image.get_rect(center=pos)
+        self.y=0
+    
+    def animation(self):
+        self.y+=1
+        self.rect.move_ip(0,-1)
+        if self.y>=60:
+            self.kill()
+        self.image=self.images[1]
+    
+    def update(self):
+        self.animation()
+
 class BubbleCell(pygame.sprite.Sprite):
     def __init__(self,topleft,index):
         super().__init__()
         self.index=index
         self.image=pygame.Surface((BUBBLE_SIZE),pygame.SRCALPHA)
-        self.image.fill((255,255,255,100))
+        self.image.fill((255,255,255,0))
         self.rect=self.image.get_rect(topleft=topleft)
     
     def set_rect(self,topleft):

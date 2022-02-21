@@ -36,7 +36,7 @@ class PuzzleBobble:
                     if event.key==pygame.K_SPACE or not event.key==pygame.K_RETURN:
                         self.controller.start_screen=False
                         self.controller.playing_game=True
-                        self.controller.next_level()
+                        self.controller.round_start()
     
     def update(self):
         self.controller.update()

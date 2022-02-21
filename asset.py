@@ -41,6 +41,20 @@ class Asset:
                 surface.set_colorkey((147,187,236))
                 self.green_font_images['all_font'].append(surface)
         
+        self.score_images=[]
+        for x in range(9):
+            surface=pygame.Surface((16,16))
+            surface.blit(self.general_sheet,(0,0),(x*17+1,2178,16,16))
+            surface=pygame.transform.scale(surface,(16*SCALE,16*SCALE))
+            surface.set_colorkey((147,187,236))
+            self.score_images.append(surface)
+        surface=pygame.Surface((32,16))
+        surface.blit(self.general_sheet,(0,0),(154,2178,32,16))
+        surface=pygame.transform.scale(surface,(32*SCALE,16*SCALE))
+        surface.set_colorkey((147,187,236))
+        self.score_images.append(surface)
+        print(self.score_images)
+        
         # round_board_image
         self.round_board=pygame.Surface((128,48))
         self.round_board.blit(self.general_sheet,(0,0),(290,2178,128,48))
