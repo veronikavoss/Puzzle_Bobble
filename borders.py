@@ -4,7 +4,7 @@ class Border(pygame.sprite.Sprite):
     def __init__(self,asset,level):
         super().__init__()
         self.asset=asset
-        self.level=min((level+4)//3,9)
+        self.level=min((level+4)//3,10)
         
         self.set_image()
         self.ceiling_down=0

@@ -8,9 +8,8 @@ class Launcher:
     def __init__(self,asset,level):
         self.asset=asset
         self.level=level
-        self.status='idle'
+        self.game_status=None
         self.get_images()
-        self.playing=False
         self.game_over=False
         
         self.speed=0
@@ -41,13 +40,13 @@ class Launcher:
             'character1_load':self.asset.launcher_images['character'][6:9],
             'character1_hurry_up':self.asset.launcher_images['character'][9:11],
             'character1_clear':self.asset.launcher_images['character'][11:15],
-            'character1_die':self.asset.launcher_images['character'][15:23],
+            'character1_dead':self.asset.launcher_images['character'][15:23],
             'character2_idle':self.asset.launcher_images['character'][23:24],
             'character2_delay1':self.asset.launcher_images['character'][24:27],
             'character2_delay2':[*self.asset.launcher_images['character'][27:29],*self.asset.launcher_images['character'][27:29]],
             'character2_work':self.asset.launcher_images['character'][29:37],
             'character2_clear':self.asset.launcher_images['character'][37:41],
-            'character2_die':self.asset.launcher_images['character'][41:43],
+            'character2_dead':self.asset.launcher_images['character'][41:43],
             'character_join':self.asset.launcher_images['character'][43:53],
             'character_thankyou':self.asset.launcher_images['character'][53:57]}
         
@@ -102,7 +101,8 @@ class Launcher:
         self.bubbles_pocket_image2=self.asset.launcher_images['bubbles_pocket'][1]
         self.bubbles_pocket_image_rect=self.bubbles_pocket_image1.get_rect(bottomleft=(GRID_CELL_SIZE*10,SCREEN_HEIGHT-GRID_CELL_SIZE))
         
-        self.borders_side_image=self.asset.borders_side_image[0]
+        self.background_level=min((self.level+1)//3,10)
+        self.borders_side_image=self.asset.borders_side_image[self.background_level]
         self.borders_side_image_rect=self.borders_side_image.get_rect(topleft=(GRID_CELL_SIZE*10,GRID_CELL_SIZE*2))
         
         hurry_up_images=self.asset.launcher_images['hurry_up']
@@ -136,7 +136,7 @@ class Launcher:
     
     def set_key_input(self):
         key_input=pygame.key.get_pressed()
-        if not self.character1_status=='character1_clear':
+        if self.game_status=='playing' and not self.character1_status=='character1_clear':
             if key_input[pygame.K_LEFT] and self.angle<=175:
                 self.speed=1
             elif key_input[pygame.K_RIGHT] and self.angle>=5:
@@ -149,7 +149,7 @@ class Launcher:
         self.angle+=self.speed
     
     def launch_bubble(self):
-        if self.playing and \
+        if self.game_status=='playing' and \
         not self.load_bubble.sprite.launched and \
         self.load_bubble.sprite.load and \
         not self.character1_status=='character1_blowing':
@@ -215,7 +215,10 @@ class Launcher:
             self.character2_status='character2_work'
             self.character2_delay_timer()
         else:
-            if self.character2_status=='character2_delay1' or self.character2_status=='character2_delay2' or self.character2_status=='character2_clear':
+            if self.character2_status=='character2_delay1' or \
+                self.character2_status=='character2_delay2' or \
+                self.character2_status=='character2_dead' or \
+                    self.character2_status=='character2_clear':
                 self.character2_animation_speed=0.1
             else:
                 self.character2_status='character2_idle'
@@ -246,6 +249,7 @@ class Launcher:
             self.pipe_frame_index=0
             self.pipe=False
         
+        # 1p character1
         self.character1_frame_index+=self.character1_animation_speed
         if self.character1_frame_index>=len(character1_1p_animation):
             self.character1_frame_index=0
@@ -255,21 +259,15 @@ class Launcher:
                 self.character1_status='character1_idle'
             elif self.character1_status=='character1_delay1' or self.character1_status=='character1_delay2':
                 self.character1_status='character1_idle'
+            elif self.character1_status=='character1_dead':
+                self.character1_animation_speed=0.1
+                self.character1_frame_index=4
         
         if self.character1_status=='character1_hurry_up':
             self.hurry_up_countdown_frame_index+=1/30
             if self.hurry_up_countdown_frame_index>=len(hurry_up_animation):
                 self.hurry_up_countdown_frame_index=0
                 self.launch_bubble()
-        
-        self.character2_frame_index+=self.character2_animation_speed
-        if self.character2_status=='character2_work':
-            self.character2_frame_index=self.controller_frame_index
-        if self.character2_frame_index>=len(character2_1p_animation) or self.character2_frame_index<=-len(character2_1p_animation):
-            self.character2_frame_index=0
-            if self.character2_status=='character2_delay1' or self.character2_status=='character2_delay2':
-                self.character2_status='character2_idle'
-                self.character2_delay_animation()
         
         if self.character1_status=='character1_clear':
             self.character1_animation_speed=0.2
@@ -285,6 +283,17 @@ class Launcher:
                 self.character1_frame_index=2
                 if self.character1_frame_index>=4:
                     self.character1_frame_index=0
+        
+        # 1p character2
+        self.character2_frame_index+=self.character2_animation_speed
+        if self.character2_status=='character2_work':
+            self.character2_frame_index=self.controller_frame_index
+        if self.character2_frame_index>=len(character2_1p_animation) or self.character2_frame_index<=-len(character2_1p_animation):
+            self.character2_frame_index=0
+            if self.character2_status=='character2_delay1' or self.character2_status=='character2_delay2':
+                self.character2_status='character2_idle'
+                self.character2_delay_animation()
+        
         if self.character2_status=='character2_clear':
             self.character2_animation_speed=0.1
             self.character2_image_rect.move_ip(self.character2_x,0)
@@ -295,7 +304,8 @@ class Launcher:
                 self.character2_x=-3
                 self.character2_image_flip=False
         
-        self.character_2p_frame_index+=0.1 # 2p blue character
+        # 2p blue character
+        self.character_2p_frame_index+=0.1
         if self.character_2p_frame_index>=len(character_2p_animation):
             self.character_2p_frame_index=0
         
@@ -310,6 +320,7 @@ class Launcher:
         self.character2_image=character2_1p_animation[int(self.character2_frame_index)]
         self.character2_image=pygame.transform.flip(self.character2_image,self.character2_image_flip,False)
         self.character_2p_image=character_2p_animation[int(self.character_2p_frame_index)]
+        self.borders_side_image=self.asset.borders_side_image[self.background_level]
     
     def update(self,level):
         self.current_time=pygame.time.get_ticks()

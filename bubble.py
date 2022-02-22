@@ -123,6 +123,9 @@ class Bubble(pygame.sprite.Sprite):
             if self.bubble_frame_index>=len(bubble_animation):
                 self.bubble_frame_index=0
         
+        # if self.bubble_status=='dead':
+        #     self.image=self.bubbles_status[self.bubble_status][self.bubble_frame_index]
+        # else:
         self.image=bubble_animation[int(self.bubble_frame_index)]
     
     def set_gravity(self):
@@ -185,10 +188,14 @@ class Bubble(pygame.sprite.Sprite):
     def set_rect(self,topleft):
         self.rect=self.image.get_rect(topleft=topleft)
     
+    def dead_bubble(self):
+        self.bubble_status='dead'
+    
     def update(self):
         self.animation()
         self.launch()
         self.loading()
+        print(self.bubble_status)
     
     def draw_bubble(self,screen,launch_count):
         if launch_count==5:

@@ -22,6 +22,7 @@ class Controller:
         self.round_update_time=0
         self.cell_index=pygame.sprite.GroupSingle()
         self.visited=[]
+        self.dead_sound_status=False
         
         self.font_type='all_font' # all_font, number, alphabet
     
@@ -70,7 +71,7 @@ class Controller:
         self.round_update_time=pygame.time.get_ticks()
     
     def popup_round_board(self):
-        if not self.launcher_sprite.playing:
+        if not self.launcher_sprite.game_status=='playing':
             if (self.current_time-self.round_update_time)//100<20:
                 self.asset.ready_sound.play()
                 # round_board_image
@@ -93,8 +94,8 @@ class Controller:
                     font_index=ord(text)-48
                     font=self.asset.green_font_images['all_font'][font_index]
                     self.screen.blit(font,(x,y))
-            else:
-                self.launcher_sprite.playing=True
+            elif not self.launcher_sprite.game_status=='dead':
+                self.launcher_sprite.game_status='playing'
                 self.asset.ready_sound.stop()
                 self.asset.go_sound.play()
     
@@ -215,13 +216,20 @@ class Controller:
         for bubble in self.launcher_sprite.bubble_sprite:
             if bubble.index and bubble.rect.centery>STAGE_BOTTOM:
                 self.launcher_sprite.game_over=True
+                self.launcher_sprite.game_status='dead'
+                self.launcher_sprite.character1_status='character1_dead'
+                self.launcher_sprite.character2_status='character2_dead'
                 print('go')
-                # self.bubble_dead()
+                self.bubble_dead()
     
     def bubble_dead(self):
-        for bubble in self.launcher_sprite.bubble_sprite:
+        if not self.dead_sound_status:
+            pygame.mixer.music.stop()
+            self.asset.dead_sound.play()
+            self.dead_sound_status=True
+        for bubble in self.launcher_sprite.bubble_sprite.sprites():
             self.launcher_sprite.load_bubble.sprite.bubble_status='dead'
-            bubble.bubble_status='dead'
+            bubble.dead_bubble()
     
     def check_index(self):
         mouse_pos=pygame.mouse.get_pos()

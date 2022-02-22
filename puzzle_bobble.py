@@ -2,7 +2,7 @@ from setting import *
 from asset import Asset
 from controller import Controller
 
-class PuzzleBobble: 
+class PuzzleBobble:
     def __init__(self):
         pygame.init()
         pygame.display.set_caption(TITLE)
