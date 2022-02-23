@@ -53,7 +53,6 @@ class Bubble(pygame.sprite.Sprite):
             'S':self.asset.bubbles_dead_image[77:87]}
         
         bubble_color=self.color
-        # bubble_color='R'
         self.bubbles_status={
             'normal':self.asset.bubbles_image[bubble_color][0:1],
             'idle':self.red_bubble(bubble_color),
@@ -104,29 +103,6 @@ class Bubble(pygame.sprite.Sprite):
             if self.bubble_frame_index>=len(bubble_animation):
                 self.bubble_frame_index=0
                 self.delay_animation_timer()
-    
-    def animation(self):
-        current_time=pygame.time.get_ticks()
-        
-        bubble_animation=self.bubbles_status[self.bubble_status]
-        
-        if self.bubble_status=='idle' or self.bubble_status=='dead':
-            if current_time-self.update_time>=self.delay_time:
-                self.delay_animation(bubble_animation)
-        elif self.bubble_status=='collide':
-            self.bubble_frame_index+=0.3
-            if self.bubble_frame_index>=len(bubble_animation):
-                self.bubble_frame_index=0
-                self.bubble_status='idle'
-        else:
-            self.bubble_frame_index+=0.1
-            if self.bubble_frame_index>=len(bubble_animation):
-                self.bubble_frame_index=0
-        
-        # if self.bubble_status=='dead':
-        #     self.image=self.bubbles_status[self.bubble_status][self.bubble_frame_index]
-        # else:
-        self.image=bubble_animation[int(self.bubble_frame_index)]
     
     def set_gravity(self):
         self.rect.x+=self.direction.x
@@ -188,14 +164,34 @@ class Bubble(pygame.sprite.Sprite):
     def set_rect(self,topleft):
         self.rect=self.image.get_rect(topleft=topleft)
     
-    def dead_bubble(self):
-        self.bubble_status='dead'
+    def animation(self):
+        current_time=pygame.time.get_ticks()
+        
+        bubble_animation=self.bubbles_status[self.bubble_status]
+        
+        if self.bubble_status=='idle' or self.bubble_status=='dead':
+            if current_time-self.update_time>=self.delay_time:
+                self.delay_animation(bubble_animation)
+        elif self.bubble_status=='collide':
+            self.bubble_frame_index+=0.3
+            if self.bubble_frame_index>=len(bubble_animation):
+                self.bubble_frame_index=0
+                self.bubble_status='idle'
+        # if self.bubble_status=='dead':
+        #     if self.bubble_frame_index>=len(bubble_animation):
+        #         self.bubble_frame_index=0
+        else:
+            self.bubble_frame_index+=0.1
+            if self.bubble_frame_index>=len(bubble_animation):
+                self.bubble_frame_index=0
+        #     self.image=self.bubbles_status[self.bubble_status][self.bubble_frame_index]
+        # else:
+        self.image=bubble_animation[int(self.bubble_frame_index)]
     
     def update(self):
-        self.animation()
         self.launch()
         self.loading()
-        print(self.bubble_status)
+        self.animation()
     
     def draw_bubble(self,screen,launch_count):
         if launch_count==5:
@@ -204,6 +200,7 @@ class Bubble(pygame.sprite.Sprite):
             x=choice((-2,2))
         else:
             x=0
+        print(self.bubble_status)
         screen.blit(self.image,(self.rect.x+x,self.rect.y))
 
 class BubblePop(Bubble):

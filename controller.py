@@ -175,6 +175,7 @@ class Controller:
                 self.launcher_sprite.bubble_sprite.remove(bubble)
                 self.asset.collide_sound.stop()
                 self.asset.pop_sound.play()
+                self.asset.bubble_score_sound.play()
     
     def remove_dropped_bubbles(self):
         self.visited.clear()
@@ -215,21 +216,25 @@ class Controller:
     def check_game_over(self):
         for bubble in self.launcher_sprite.bubble_sprite:
             if bubble.index and bubble.rect.centery>STAGE_BOTTOM:
-                self.launcher_sprite.game_over=True
-                self.launcher_sprite.game_status='dead'
-                self.launcher_sprite.character1_status='character1_dead'
-                self.launcher_sprite.character2_status='character2_dead'
-                print('go')
-                self.bubble_dead()
+                self.player_dead()
     
-    def bubble_dead(self):
+    def player_dead(self):
+        self.launcher_sprite.game_over=True
+        self.launcher_sprite.game_status='dead'
+        self.launcher_sprite.character1_status='character1_dead'
+        self.launcher_sprite.character2_status='character2_dead'
         if not self.dead_sound_status:
             pygame.mixer.music.stop()
             self.asset.dead_sound.play()
             self.dead_sound_status=True
+        self.launcher_sprite.load_bubble.sprite.bubble_status='dead'
+        self.launcher_sprite.load_bubble.sprite.set_bubbles_image()
+        self.launcher_sprite.next_bubble.sprite.bubble_status='dead'
+        self.launcher_sprite.next_bubble.sprite.set_bubbles_image()
+        # temp=[i.index for i in self.launcher_sprite.bubble_sprite.sprites()]
         for bubble in self.launcher_sprite.bubble_sprite.sprites():
-            self.launcher_sprite.load_bubble.sprite.bubble_status='dead'
-            bubble.dead_bubble()
+            bubble.bubble_status='dead'
+            bubble.set_bubbles_image()
     
     def check_index(self):
         mouse_pos=pygame.mouse.get_pos()

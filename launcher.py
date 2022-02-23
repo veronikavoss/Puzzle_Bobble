@@ -348,7 +348,6 @@ class Launcher:
             ])
         
         self.guide_point_sprite.draw(screen)
-        
         for bubble in self.bubble_sprite.sprites():
             bubble.draw_bubble(screen,self.launch_count)
         self.borders_sprite.sprite.draw(screen)
