@@ -200,7 +200,6 @@ class Bubble(pygame.sprite.Sprite):
             x=choice((-2,2))
         else:
             x=0
-        print(self.bubble_status)
         screen.blit(self.image,(self.rect.x+x,self.rect.y))
 
 class BubblePop(Bubble):

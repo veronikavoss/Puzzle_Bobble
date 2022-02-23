@@ -10,6 +10,7 @@ class Controller:
         self.asset=asset
         self.credit=1
         self.level=-1
+        self.score=0
         
         self.start_screen=True
         self.start_screen_sprite=StartScreen(self.screen,self.asset)
@@ -226,6 +227,8 @@ class Controller:
         if not self.dead_sound_status:
             pygame.mixer.music.stop()
             self.asset.dead_sound.play()
+            print(self.asset.dead_sound.get_length())
+            self.asset.dead_voice_sound.play()
             self.dead_sound_status=True
         self.launcher_sprite.load_bubble.sprite.bubble_status='dead'
         self.launcher_sprite.load_bubble.sprite.set_bubbles_image()
@@ -262,13 +265,33 @@ class Controller:
             special_floor_rect=special_floor.get_rect(bottom=SCREEN_HEIGHT)
             self.screen.blits([[special_background,special_background_rect],[special_floor,special_floor_rect]])
     
-    def draw_text(self):
+    def draw_bottom_text(self):
         bottom_text=list(f'`````````````````LEVEL-4`````CREDIT`{self.credit:0>2}``')
         for x,text in enumerate(bottom_text):
             if text!='`':
                 font_index=ord(text)-33
                 font=self.asset.font_images[self.font_type][font_index]
                 self.screen.blit(font,(x*GRID_CELL_SIZE,GRID_CELL_SIZE*27))
+    
+    def draw_top_text(self):
+        top_text=list('1UP'),list(f'{self.score:0>8}'),list('INSERT_COIN')
+        for x,text in enumerate(top_text[0]):
+            x=x*(8*SCALE)+((8*SCALE)*3)
+            font_index=ord(text)-33
+            font=self.asset.font_images[self.font_type][font_index]
+            self.screen.blit(font,(x,0))
+        for x,text in enumerate(top_text[1]):
+            x=x*(8*SCALE)+((8*SCALE)*4)
+            font_index=ord(text)-33
+            font=self.asset.font_images[self.font_type][font_index]
+            self.screen.blit(font,(x,(8*SCALE)))
+        for x,text in enumerate(top_text[2]):
+            if text!='_':
+                x=SCREEN_WIDTH-((8*SCALE)*(13-x))
+                font_index=ord(text)-33
+                font=self.asset.font_images[self.font_type][font_index]
+                if self.current_time//1000%2==0:
+                    self.screen.blit(font,(x,(8*SCALE)))
     
     def update(self):
         self.current_time=pygame.time.get_ticks()
@@ -289,13 +312,14 @@ class Controller:
     def draw(self):
         if self.start_screen:
             self.start_screen_sprite.draw()
-            self.draw_text()
+            self.draw_bottom_text()
         elif not self.start_screen and self.playing_game:
             self.draw_background()
             self.launcher_sprite.bubble_cells.draw(self.screen)
             self.launcher_sprite.draw(self.screen)
             self.bubble_popped.draw(self.screen)
-            self.draw_text()
+            self.draw_bottom_text()
+            self.draw_top_text()
             self.popup_round_board()
         # else:
         #     self.screen.fill('black')

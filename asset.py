@@ -301,3 +301,7 @@ class Asset:
         self.round_clear_sound.set_volume(SFX_VOLUME-0.7)
         self.dead_sound=pygame.mixer.Sound(os.path.join(SOUND_PATH,'ExtraBallsElimination.wav'))
         self.dead_sound.set_volume(SFX_VOLUME-0.7)
+        self.dead_voice_sound=pygame.mixer.Sound(os.path.join(SOUND_PATH,'VoicLevelFailed.wav'))
+        self.dead_voice_sound.set_volume(SFX_VOLUME-0.7)
+        self.game_over_sound=pygame.mixer.Sound(os.path.join(SOUND_PATH,'Game_Over.ogg'))
+        self.game_over_sound.set_volume(SFX_VOLUME-0.7)
