@@ -136,7 +136,7 @@ class Launcher:
     
     def set_key_input(self):
         key_input=pygame.key.get_pressed()
-        if self.game_status=='playing' and not self.character1_status=='character1_clear':
+        if (self.game_status=='ready' or self.game_status=='playing') and not self.character1_status=='character1_clear':
             if key_input[pygame.K_LEFT] and self.angle<=175:
                 self.speed=1
             elif key_input[pygame.K_RIGHT] and self.angle>=5:
@@ -363,5 +363,5 @@ class Launcher:
         
         if self.character1_status=='character1_hurry_up':
             screen.blit(self.hurry_up_countdown_image,self.hurry_up_countdown_image_rect)
-        # print(self.character1_status,self.current_time)
         # print(self.asset.launch_sound)
+        print(self.game_status)

@@ -10,7 +10,7 @@ class Controller:
         self.asset=asset
         self.credit=1
         self.level=-1
-        self.score=0
+        self.set_score()
         
         self.start_screen=True
         self.start_screen_sprite=StartScreen(self.screen,self.asset)
@@ -20,10 +20,16 @@ class Controller:
         
         self.playing_game=False
         self.game_over=False
-        self.round_update_time=0
+        self.play_time=0
+        self.popup_round_board_timer_update=0
+        self.game_timer_update=0
         self.cell_index=pygame.sprite.GroupSingle()
         self.visited=[]
+        
+        self.ready_sound=False
+        self.go_sound=False
         self.dead_sound_status=False
+        self.clear_sound=False
         
         self.font_type='all_font' # all_font, number, alphabet
     
@@ -38,9 +44,12 @@ class Controller:
         self.launcher_sprite.load_bubble.empty()
         self.launcher_sprite.next_bubble.empty()
         self.level+=1
-        pygame.mixer.music.play(-1)
         
-        self.start_round_timer()
+        self.ready_sound=False
+        self.go_sound=False
+        self.clear_sound=False
+        self.launcher_sprite.game_status='ready'
+        self.popup_round_board_timer()
         
         for row,data in enumerate(self.level_data.levels[f'level_{self.level+1}']):
             for column,bubble in enumerate(data):
@@ -68,37 +77,47 @@ class Controller:
         self.launcher_sprite.next_bubble.add(Bubble(
             self.asset,(GRID_CELL_SIZE*15,GRID_CELL_SIZE*25),self.launcher_sprite.choice_bubble_color()))
     
-    def start_round_timer(self):
-        self.round_update_time=pygame.time.get_ticks()
+    def popup_round_board_timer(self):
+        self.popup_round_board_timer_update=pygame.time.get_ticks()
+    
+    def game_timer(self):
+        self.game_timer_update=pygame.time.get_ticks()
+    
+    def set_game_status(self):
+        if not self.launcher_sprite.game_status=='dead' and not self.launcher_sprite.game_status=='clear':
+            if (self.current_time-self.popup_round_board_timer_update)//100<20:
+                self.launcher_sprite.game_status='ready'
+            else:
+                self.play_time=(self.current_time-self.game_timer_update)//1000
+                self.launcher_sprite.game_status='playing'
     
     def popup_round_board(self):
-        if not self.launcher_sprite.game_status=='playing':
-            if (self.current_time-self.round_update_time)//100<20:
-                self.asset.ready_sound.play()
-                # round_board_image
-                self.round_board_image=self.asset.round_board
-                self.round_board_image_rect=self.round_board_image.get_rect(topleft=(GRID_CELL_SIZE*12,GRID_CELL_SIZE*6))
-                self.screen.blit(self.round_board_image,self.round_board_image_rect)
-                
-                # round_board_text_image
-                round_text=[list('ROUND'),list(f'{self.level+1:0>2}')]
-                for column,text in enumerate(round_text[0]):
-                    x=column*(16*SCALE)+GRID_CELL_SIZE*15
-                    y=GRID_CELL_SIZE*7
-                    font_index=ord(text)-55
-                    font=self.asset.green_font_images['all_font'][font_index]
-                    self.screen.blit(font,(x,y))
-                
-                for column,text in enumerate(round_text[1]):
-                    x=column*(16*SCALE)+GRID_CELL_SIZE*18
-                    y=GRID_CELL_SIZE*9
-                    font_index=ord(text)-48
-                    font=self.asset.green_font_images['all_font'][font_index]
-                    self.screen.blit(font,(x,y))
-            elif not self.launcher_sprite.game_status=='dead':
-                self.launcher_sprite.game_status='playing'
-                self.asset.ready_sound.stop()
-                self.asset.go_sound.play()
+        if self.launcher_sprite.game_status=='ready':
+            # round_board_image
+            self.round_board_image=self.asset.round_board
+            self.round_board_image_rect=self.round_board_image.get_rect(topleft=(GRID_CELL_SIZE*12,GRID_CELL_SIZE*6))
+            self.screen.blit(self.round_board_image,self.round_board_image_rect)
+            
+            # round_board_text_image
+            round_text=[list('ROUND'),list(f'{self.level+1:0>2}')]
+            for column,text in enumerate(round_text[0]):
+                x=column*(16*SCALE)+GRID_CELL_SIZE*15
+                y=GRID_CELL_SIZE*7
+                font_index=ord(text)-55
+                font=self.asset.green_font_images['all_font'][font_index]
+                self.screen.blit(font,(x,y))
+            
+            for column,text in enumerate(round_text[1]):
+                x=column*(16*SCALE)+GRID_CELL_SIZE*18
+                y=GRID_CELL_SIZE*9
+                font_index=ord(text)-48
+                font=self.asset.green_font_images['all_font'][font_index]
+                self.screen.blit(font,(x,y))
+    
+    def set_score(self):
+        self.total_score=0
+        self.drop_bubbles_score=0
+        self.time_bonus_score=0
     
     def bubbles_collision(self):
         load_bubble=self.launcher_sprite.load_bubble.sprite
@@ -173,6 +192,7 @@ class Controller:
                 self.bubble_popped.add(BubblePop(self.asset,bubble.rect.center,bubble.color))
                 self.bubble_popped.add(BubblePopped(self.asset,bubble.rect.center,bubble.color))
                 self.bubble_popped.add(BubblePopScore(self.asset,bubble.rect.center))
+                self.total_score+=10
                 self.launcher_sprite.bubble_sprite.remove(bubble)
                 self.asset.collide_sound.stop()
                 self.asset.pop_sound.play()
@@ -192,14 +212,15 @@ class Controller:
             self.launcher_sprite.bubble_sprite.remove(bubble)
             self.bubble_popped.add(BubbleDrop(self.asset,bubble.rect.center,bubble.color))
             self.bubble_popped.add(BubblePopScore(self.asset,bubble.rect.center))
+            self.total_score+=10
+        self.drop_bubbles_score+=20**len(drop_bubbles)//10**(len(drop_bubbles)-1)
+        self.total_score+=self.drop_bubbles_score
     
     def round_clear(self):
+        self.launcher_sprite.game_status='clear'
         self.launcher_sprite.character1_status='character1_clear'
         self.launcher_sprite.character2_status='character2_clear'
-        self.start_round_timer()
-        pygame.mixer.music.stop()
-        self.asset.pop_sound.stop()
-        self.asset.round_clear_sound.play()
+        self.popup_round_board_timer()
         self.launcher_sprite.bubble_sprite.empty()
         # if not self.launcher_sprite.load_bubble and self.launcher_sprite.next_bubble.sprite:
             # self.bubble_popped.add(BubblePop(self.asset,self.launcher_sprite.next_bubble.sprite.rect.center,self.launcher_sprite.next_bubble.sprite.color))
@@ -210,8 +231,10 @@ class Controller:
         self.cell_index.empty()
     
     def next_round(self):
-        if self.launcher_sprite.character1_status=='character1_clear':
-            if (self.current_time-self.round_update_time)//100==50:
+        #if self.launcher_sprite.character1_status=='character1_clear':
+        if self.launcher_sprite.game_status=='clear':
+            if (self.current_time-self.popup_round_board_timer_update)//100==40:
+                self.asset.round_clear_sound.stop()
                 self.round_start()
     
     def check_game_over(self):
@@ -273,25 +296,96 @@ class Controller:
                 font=self.asset.font_images[self.font_type][font_index]
                 self.screen.blit(font,(x*GRID_CELL_SIZE,GRID_CELL_SIZE*27))
     
+    def palette_swap(self,surface,new_color,old_color):
+        font_copy=pygame.Surface(surface.get_size())
+        font_copy.fill(new_color)
+        surface.set_colorkey(old_color)
+        font_copy.blit(surface,(0,0))
+        return font_copy
+    
     def draw_top_text(self):
-        top_text=list('1UP'),list(f'{self.score:0>8}'),list('INSERT_COIN')
+        top_text=list('1UP'),list(f'{self.total_score:0>8}'),list('INSERT_COIN')
+        
         for x,text in enumerate(top_text[0]):
-            x=x*(8*SCALE)+((8*SCALE)*3)
+            x=x*GRID_CELL_SIZE+(GRID_CELL_SIZE*3)
             font_index=ord(text)-33
-            font=self.asset.font_images[self.font_type][font_index]
-            self.screen.blit(font,(x,0))
+            font_org=self.asset.font_images[self.font_type][font_index]
+            font_copy=pygame.Surface.copy(font_org)
+            # font1=self.palette_swap(font_copy,(0,136,0),(136,136,136))
+            font2=self.palette_swap(font_copy,(16,248,16),(248,248,248))
+            # self.screen.blits([[font1,(x,0)],[font2,(x,0)]])
+            self.screen.blit(font2,(x,0))
         for x,text in enumerate(top_text[1]):
-            x=x*(8*SCALE)+((8*SCALE)*4)
+            x=x*GRID_CELL_SIZE+(GRID_CELL_SIZE*4)
             font_index=ord(text)-33
             font=self.asset.font_images[self.font_type][font_index]
-            self.screen.blit(font,(x,(8*SCALE)))
+            self.screen.blit(font,(x,GRID_CELL_SIZE))
         for x,text in enumerate(top_text[2]):
             if text!='_':
-                x=SCREEN_WIDTH-((8*SCALE)*(13-x))
+                x=SCREEN_WIDTH-(GRID_CELL_SIZE*(13-x))
                 font_index=ord(text)-33
                 font=self.asset.font_images[self.font_type][font_index]
                 if self.current_time//1000%2==0:
-                    self.screen.blit(font,(x,(8*SCALE)))
+                    self.screen.blit(font,(x,GRID_CELL_SIZE))
+    
+    def draw_round_clear_text(self):
+        if self.launcher_sprite.game_status=='clear':
+            clear_round_text=[list('ROUND_CLEAR'),list(f'{self.play_time:_>2}_SEC'),list(f'{self.total_score:_>5}_PTS'),list('NO_BONUS')]
+            # round clear
+            if (self.current_time-self.popup_round_board_timer_update)//100<20:
+                for column,text in enumerate(clear_round_text[0]):
+                    if text!='_':
+                        x=column*(16*SCALE)+GRID_CELL_SIZE*9
+                        y=GRID_CELL_SIZE*10
+                        font_index=ord(text)-55
+                        font=self.asset.green_font_images['all_font'][font_index]
+                        self.screen.blit(font,(x,y))
+            else:
+                # play time
+                for column,text in enumerate(clear_round_text[1]):
+                    if text!='_':
+                        x=column*(16*SCALE)+GRID_CELL_SIZE*14
+                        y=GRID_CELL_SIZE*8
+                        font_index=ord(text)-48
+                        if text=='S' or text=='E' or text=='C':
+                            font_index=ord(text)-55
+                        font=self.asset.green_font_images['all_font'][font_index]
+                        self.screen.blit(font,(x,y))
+                # time bonus
+                if self.game_timer_update<=5:
+                    for column,text in enumerate(clear_round_text[2]):
+                        if text!='_':
+                            x=column*(16*SCALE)+GRID_CELL_SIZE*11
+                            y=GRID_CELL_SIZE*12
+                            font_index=ord(text)-48
+                            if text=='P' or text=='T' or text=='S':
+                                font_index=ord(text)-55
+                            font=self.asset.green_font_images['all_font'][font_index]
+                            self.screen.blit(font,(x,y))
+                else:
+                    for column,text in enumerate(clear_round_text[3]):
+                        if text!='_':
+                            x=column*(16*SCALE)+GRID_CELL_SIZE*12
+                            y=GRID_CELL_SIZE*12
+                            font_index=ord(text)-55
+                            font=self.asset.green_font_images['all_font'][font_index]
+                            self.screen.blit(font,(x,y))
+    
+    def play_sounds(self):
+        if self.launcher_sprite.game_status=='ready' and not self.ready_sound:
+            pygame.mixer.music.play(-1)
+            self.asset.ready_sound.play()
+            self.ready_sound=True
+        elif self.launcher_sprite.game_status=='playing' and not self.go_sound:
+            self.game_timer()
+            self.asset.ready_sound.stop()
+            self.asset.go_sound.play()
+            self.go_sound=True
+        elif self.launcher_sprite.game_status=='clear' and not self.clear_sound:
+            pygame.mixer.music.stop()
+            self.asset.pop_sound.stop()
+            self.asset.round_clear_sound.play()
+            self.clear_sound=True
     
     def update(self):
         self.current_time=pygame.time.get_ticks()
@@ -305,8 +399,10 @@ class Controller:
             self.launcher_sprite.next_bubble.update()
             self.bubbles_collision()
             self.bubble_popped.update()
+            self.set_game_status()
             self.next_round()
             self.check_game_over()
+            self.play_sounds()
             self.check_index()
     
     def draw(self):
@@ -321,6 +417,9 @@ class Controller:
             self.draw_bottom_text()
             self.draw_top_text()
             self.popup_round_board()
+            self.draw_round_clear_text()
         # else:
         #     self.screen.fill('black')
         #     self.draw_text()
+        print(self.asset.round_clear_sound.get_length())
+        print(self.play_time)

@@ -280,6 +280,18 @@ class BubblePopScore(pygame.sprite.Sprite):
     def update(self):
         self.animation()
 
+class BubbleDropScore:
+    def __init__(self,asset,score):
+        self.asset=asset
+        self.score=list(str(score))
+    
+    def draw(self,screen):
+        for i,number in enumerate(self.score):
+            font_index=ord(number)-48
+            self.image=self.asset.green_font_images['all_font'][font_index]
+            self.rect=self.image.get_rect()
+            screen.blit(self.image,self.rect)
+
 class BubbleCell(pygame.sprite.Sprite):
     def __init__(self,topleft,index):
         super().__init__()
