@@ -268,10 +268,22 @@ class Controller:
         self.launcher_sprite.load_bubble.sprite.set_bubbles_image()
         self.launcher_sprite.next_bubble.sprite.bubble_status='dead'
         self.launcher_sprite.next_bubble.sprite.set_bubbles_image()
-        # temp=[i.index for i in self.launcher_sprite.bubble_sprite.sprites()]
         for bubble in self.launcher_sprite.bubble_sprite.sprites():
             bubble.bubble_status='dead'
             bubble.set_bubbles_image()
+    
+    def game_over_timer(self):
+        if not self.game_over:
+            self.game_timer_update=pygame.time.get_ticks()
+            self.game_over=True
+    
+    def set_game_over(self):
+        if self.launcher_sprite.game_status=='dead':
+            self.game_over_timer()
+            print(self.current_time-self.game_timer_update)
+            if self.current_time-self.game_timer_update>=3000:
+                print('game_over')
+                self.playing_game=False
     
     def check_index(self):
         mouse_pos=pygame.mouse.get_pos()
@@ -411,6 +423,7 @@ class Controller:
             self.play_sounds()
             self.check_index()
             self.drop_bonus_score.update()
+            self.set_game_over()
     
     def draw(self):
         if self.start_screen:
@@ -427,7 +440,9 @@ class Controller:
             self.draw_round_clear_text()
             if self.drop_bonus_score:
                 self.drop_bonus_score.sprite.draw(self.screen)
+        elif not self.start_screen and not self.playing_game:
+            self.screen.fill((0,0,0))
         # else:
         #     self.screen.fill('black')
         #     self.draw_text()
-        # print(self.play_time,self.time_bonus_score)
+        print(self.play_time,self.game_timer_update)
