@@ -40,6 +40,8 @@ class Asset:
                 surface=pygame.transform.scale(surface,(16*SCALE,16*SCALE))
                 surface.set_colorkey((147,187,236))
                 self.green_font_images['all_font'].append(surface)
+        self.green_font_images['large']=self.green_font_images['all_font'][:39]
+        self.green_font_images['small']=self.green_font_images['all_font'][39:]
         
         self.score_images=[]
         for x in range(9):
@@ -53,7 +55,6 @@ class Asset:
         surface=pygame.transform.scale(surface,(32*SCALE,16*SCALE))
         surface.set_colorkey((147,187,236))
         self.score_images.append(surface)
-        print(self.score_images)
         
         # round_board_image
         self.round_board=pygame.Surface((128,48))
@@ -158,12 +159,12 @@ class Asset:
         self.guide_point_images=[]
         for y in range(2):
             for x in range(4):
-                # surface=pygame.Surface((16,16),pygame.SRCALPHA)
-                # surface.blit(self.general_sheet,(4,4),(9*x+1041,9*y+1761,8,8))
-                # surface=pygame.transform.scale(surface,(16*SCALE,16*SCALE))
-                surface=pygame.Surface((8,8))
-                surface.blit(self.general_sheet,(0,0),(9*x+1041,9*y+1761,8,8))
-                surface=pygame.transform.scale(surface,(8*SCALE,8*SCALE))
+                surface=pygame.Surface((16,16),pygame.SRCALPHA)
+                surface.blit(self.general_sheet,(4,4),(9*x+1041,9*y+1761,8,8))
+                surface=pygame.transform.scale(surface,(16*SCALE,16*SCALE))
+                # surface=pygame.Surface((8,8))
+                # surface.blit(self.general_sheet,(0,0),(9*x+1041,9*y+1761,8,8))
+                # surface=pygame.transform.scale(surface,(8*SCALE,8*SCALE))
                 surface.set_colorkey((147,187,236))
                 self.guide_point_images.append(surface)
         
@@ -222,6 +223,8 @@ class Asset:
             surface=pygame.transform.scale(surface,(32*SCALE,32*SCALE))
             surface.set_colorkey((147,187,236))
             self.launcher_images['hurry_up'].append(surface)
+        for i in range(2,11,2):
+            self.launcher_images['hurry_up'].insert(i,self.launcher_images['hurry_up'][0])
     
     def get_bubble_image(self):
         # B=BLUE L=BLACK S=SILVER

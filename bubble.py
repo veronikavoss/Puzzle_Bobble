@@ -23,7 +23,7 @@ class Bubble(pygame.sprite.Sprite):
         self.image=self.bubbles_status[self.bubble_status][self.bubble_frame_index]
         self.rect=self.image.get_rect(topleft=pos)
         self.direction=pygame.math.Vector2(0,0)
-        self.radius=18
+        self.radius=20
         self.gravity=0.5
         self.pop_bounce_speed=-12
     
@@ -280,17 +280,49 @@ class BubblePopScore(pygame.sprite.Sprite):
     def update(self):
         self.animation()
 
-class BubbleDropScore:
+class BubbleDropScore(pygame.sprite.Sprite):
     def __init__(self,asset,score):
+        super().__init__()
         self.asset=asset
         self.score=list(str(score))
+        self.x=0
+        self.y=0
+        self.speed_y=5
+        self.image=self.asset.green_font_images['large'][0]
+        self.rect=self.image.get_rect(right=-(16*SCALE)*len(self.score))
+        self.score_hidden_timer_update=pygame.time.get_ticks()
+        self.color_offset=[(0,248,0),(0,0,248),(248,0,248),(248,248,0),(0,248,248),(248,0,0)]
+        self.color_offset_number=0
+    
+    def update(self):
+        # print(self.rect)
+        pass
     
     def draw(self,screen):
         for i,number in enumerate(self.score):
             font_index=ord(number)-48
-            self.image=self.asset.green_font_images['all_font'][font_index]
-            self.rect=self.image.get_rect()
-            screen.blit(self.image,self.rect)
+            self.image=self.asset.green_font_images['large'][font_index]
+            if self.x+((16*SCALE)*len(self.score)//2)<SCREEN_WIDTH//2:
+                self.x+=10
+                self.y+=self.speed_y
+                if self.y>=GRID_CELL_SIZE*2:
+                    self.speed_y=-5
+                elif self.y<0:
+                    self.speed_y=0
+                screen.blit(self.image,(((16*SCALE)*i)+self.x,self.y))
+            elif self.y>GRID_CELL_SIZE*-2:
+                current_time=pygame.time.get_ticks()
+                self.x+=0
+                self.image=self.asset.green_font_images['small'][font_index]
+                if current_time-self.score_hidden_timer_update<=1500:
+                    self.color_offset_number+=0.1
+                    if self.color_offset_number>=len(self.color_offset):
+                        self.color_offset_number=0
+                    image_copy=pygame.Surface.copy(self.image)
+                    pixelarray=pygame.PixelArray(image_copy)
+                    pixelarray.replace(self.color_offset[0],self.color_offset[int(self.color_offset_number)])
+                    del pixelarray
+                    screen.blit(image_copy,(((8*SCALE)*i)+self.x,self.y))
 
 class BubbleCell(pygame.sprite.Sprite):
     def __init__(self,topleft,index):

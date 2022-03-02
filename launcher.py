@@ -14,7 +14,7 @@ class Launcher:
         
         self.speed=0
         self.angle=90
-        self.update_time=0
+        self.guide_point_timer_update=0
         self.character1_update_time=pygame.time.get_ticks()
         self.character2_update_time=pygame.time.get_ticks()
         self.hurry_up_update_time=pygame.time.get_ticks()
@@ -105,21 +105,19 @@ class Launcher:
         self.borders_side_image=self.asset.borders_side_image[self.background_level]
         self.borders_side_image_rect=self.borders_side_image.get_rect(topleft=(GRID_CELL_SIZE*10,GRID_CELL_SIZE*2))
         
-        hurry_up_images=self.asset.launcher_images['hurry_up']
-        for i in range(2,11,2):
-            hurry_up_images.insert(i,self.asset.launcher_images['hurry_up'][0])
+        self.hurry_up_images=self.asset.launcher_images['hurry_up']
         self.hurry_up_countdown_frame_index=0
-        self.hurry_up_countdown_image=hurry_up_images[self.hurry_up_countdown_frame_index]
+        self.hurry_up_countdown_image=self.hurry_up_images[self.hurry_up_countdown_frame_index]
         self.hurry_up_countdown_image_rect=self.hurry_up_countdown_image.get_rect(bottomleft=(GRID_CELL_SIZE*11.5,SCREEN_HEIGHT-GRID_CELL_SIZE*2))
     
     def guide_point_cooldown(self):
-        self.update_time=pygame.time.get_ticks()
+        self.guide_point_timer_update=pygame.time.get_ticks()
         self.guide_point_index+=1
         if self.guide_point_index>=8:
             self.guide_point_index=0
     
     def set_guide_point(self):
-        if self.current_time-self.update_time>=60:
+        if self.current_time-self.guide_point_timer_update>=60:
             self.guide_point=GuidePoint(self.asset,self.guide_point_index)
             self.guide_point.set_angle(self.angle)
             self.guide_point_sprite.add(self.guide_point)
@@ -138,9 +136,9 @@ class Launcher:
         key_input=pygame.key.get_pressed()
         if (self.game_status=='ready' or self.game_status=='playing') and not self.character1_status=='character1_clear':
             if key_input[pygame.K_LEFT] and self.angle<=175:
-                self.speed=1
+                self.speed=1.5
             elif key_input[pygame.K_RIGHT] and self.angle>=5:
-                self.speed=-1
+                self.speed=-1.5
             else:
                 self.speed=0
             if key_input[pygame.K_SPACE]:
@@ -230,7 +228,7 @@ class Launcher:
         controller_animation=self.asset.launcher_images['controller']
         pipe_animation=self.asset.launcher_images['pipe']
         character1_1p_animation=self.character_1p_status[self.character1_status]
-        hurry_up_animation=self.asset.launcher_images['hurry_up']
+        hurry_up_animation=self.hurry_up_images
         character2_1p_animation=self.character_1p_status[self.character2_status]
         character_2p_animation=self.character_2p_status['character_join']
         
@@ -262,9 +260,8 @@ class Launcher:
             elif self.character1_status=='character1_dead':
                 self.character1_animation_speed=0.1
                 self.character1_frame_index=4
-        
         if self.character1_status=='character1_hurry_up':
-            self.hurry_up_countdown_frame_index+=1/30
+            self.hurry_up_countdown_frame_index=(self.current_time-self.hurry_up_update_time)//500
             if self.hurry_up_countdown_frame_index>=len(hurry_up_animation):
                 self.hurry_up_countdown_frame_index=0
                 self.launch_bubble()
@@ -364,4 +361,3 @@ class Launcher:
         if self.character1_status=='character1_hurry_up':
             screen.blit(self.hurry_up_countdown_image,self.hurry_up_countdown_image_rect)
         # print(self.asset.launch_sound)
-        print(self.game_status)
