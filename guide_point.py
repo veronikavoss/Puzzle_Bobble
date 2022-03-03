@@ -9,6 +9,7 @@ class GuidePoint(pygame.sprite.Sprite):
         
         self.image=self.asset.guide_point_images[self.image_index]
         self.rect=self.image.get_rect(center=BUBBLE_LOAD_POS)
+        self.mask=pygame.mask.from_surface(self.asset.bubbles_image['R'][0])
         
         self.radius=20
     

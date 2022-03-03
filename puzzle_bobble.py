@@ -14,6 +14,7 @@ class PuzzleBobble:
     
     def start(self):
         self.controller=Controller(self.screen,self.asset)
+        self.controller.start_screen=True
         self.loop()
     
     def loop(self):
@@ -37,9 +38,17 @@ class PuzzleBobble:
                         self.controller.start_screen=False
                         self.controller.playing_game=True
                         self.controller.round_start()
+                elif not self.controller.start_screen and not self.controller.playing_game:
+                    if event.key==pygame.K_SPACE or not event.key==pygame.K_RETURN:
+                        self.controller.level-=1
+                        self.controller.playing_game=True
+                        self.controller.game_over=False
+                        self.controller.round_start()
     
     def update(self):
         self.controller.update()
+        if self.controller.game_over_countdown<0:
+            self.start()
     
     def draw(self):
         self.controller.draw()

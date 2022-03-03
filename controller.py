@@ -15,10 +15,8 @@ class Controller:
         self.drop_bubbles_score=0
         self.time_bonus_score=0
         
-        self.start_screen=True
+        self.start_screen=False
         self.start_screen_sprite=StartScreen(self.screen,self.asset)
-        
-        self.level_data=Level()
         self.bubble_popped=pygame.sprite.Group()
         self.drop_bonus_score=pygame.sprite.GroupSingle()
         
@@ -26,7 +24,8 @@ class Controller:
         self.game_over=False
         self.play_time=0
         self.popup_round_board_timer_update=0
-        self.game_timer_update=0
+        self.game_over_timer_update=0
+        self.game_over_countdown=0
         self.cell_index=pygame.sprite.GroupSingle()
         self.visited=[]
         
@@ -44,14 +43,17 @@ class Controller:
             self.round_start()
     
     def round_start(self):
+        self.level_data=Level()
         self.launcher_sprite=Launcher(self.asset,self.level)
         self.launcher_sprite.load_bubble.empty()
         self.launcher_sprite.next_bubble.empty()
+        self.launcher_sprite.bubble_sprite.empty()
         self.level+=1
         
         self.ready_sound=False
         self.go_sound=False
         self.clear_sound=False
+        self.dead_sound_status=False
         self.launcher_sprite.game_status='ready'
         self.popup_round_board_timer()
         
@@ -85,14 +87,14 @@ class Controller:
         self.popup_round_board_timer_update=pygame.time.get_ticks()
     
     def game_timer(self):
-        self.game_timer_update=pygame.time.get_ticks()
+        self.game_over_timer_update=pygame.time.get_ticks()
     
     def set_game_status(self):
         if not self.launcher_sprite.game_status=='dead' and not self.launcher_sprite.game_status=='clear':
             if (self.current_time-self.popup_round_board_timer_update)//100<20:
                 self.launcher_sprite.game_status='ready'
             else:
-                self.play_time=(self.current_time-self.game_timer_update)//1000
+                self.play_time=(self.current_time-self.game_over_timer_update)//1000
                 self.launcher_sprite.game_status='playing'
     
     def popup_round_board(self):
@@ -274,16 +276,44 @@ class Controller:
     
     def game_over_timer(self):
         if not self.game_over:
-            self.game_timer_update=pygame.time.get_ticks()
+            self.game_over_timer_update=pygame.time.get_ticks()
             self.game_over=True
     
     def set_game_over(self):
         if self.launcher_sprite.game_status=='dead':
             self.game_over_timer()
-            print(self.current_time-self.game_timer_update)
-            if self.current_time-self.game_timer_update>=3000:
-                print('game_over')
+            if self.current_time-self.game_over_timer_update>=3000:
                 self.playing_game=False
+                self.game_over=False
+    
+    def draw_game_over(self):
+        self.game_over_timer()
+        self.game_over_countdown=20-((self.current_time-self.game_over_timer_update)//1000)
+        game_over_text=list('PUSH_START_BUTTON_TO_CONTINUE'),list(f'TIMER_{self.game_over_countdown:0>2}')
+        for x,text in enumerate(game_over_text[0]):
+            if text!='_':
+                font_index=ord(text)-33
+                font_org=self.asset.font_images[self.font_type][font_index]
+                font_copy=pygame.Surface.copy(font_org)
+                pixelarray=pygame.PixelArray(font_copy)
+                pixelarray.replace((248,248,248),(248,248,16))
+                pixelarray.replace((136,136,136),(136,136,0))
+                del pixelarray
+                x=x*GRID_CELL_SIZE+(GRID_CELL_SIZE*5)
+                y=GRID_CELL_SIZE*14
+                self.screen.blit(font_copy,(x,y))
+        for x,text in enumerate(game_over_text[1]):
+            if text!='_':
+                font_index=ord(text)-33
+                font_org=self.asset.font_images[self.font_type][font_index]
+                font_copy=pygame.Surface.copy(font_org)
+                pixelarray=pygame.PixelArray(font_copy)
+                pixelarray.replace((248,248,248),(248,248,16))
+                pixelarray.replace((136,136,136),(136,136,0))
+                del pixelarray
+                x=x*GRID_CELL_SIZE+(GRID_CELL_SIZE*16)
+                y=GRID_CELL_SIZE*16
+                self.screen.blit(font_copy,(x,y))
     
     def check_index(self):
         mouse_pos=pygame.mouse.get_pos()
@@ -442,7 +472,8 @@ class Controller:
                 self.drop_bonus_score.sprite.draw(self.screen)
         elif not self.start_screen and not self.playing_game:
             self.screen.fill((0,0,0))
+            self.draw_game_over()
         # else:
         #     self.screen.fill('black')
         #     self.draw_text()
-        print(self.play_time,self.game_timer_update)
+        print(self.playing_game,self.game_over)

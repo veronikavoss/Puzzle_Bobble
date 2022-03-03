@@ -124,13 +124,8 @@ class Launcher:
             self.guide_point_cooldown()
     
     def guide_point_collision(self):
-        for point in self.guide_point_sprite:
-            if pygame.sprite.collide_mask(point,self.borders_sprite.sprite):
-                point.kill()
-            for bubble in self.bubble_sprite:
-                if pygame.sprite.collide_rect(point,bubble):
-                    if not bubble.load:
-                        point.kill()
+        collide_bubble=pygame.sprite.groupcollide(self.guide_point_sprite,self.bubble_sprite,True,False,pygame.sprite.collide_mask)
+        collide_ceiling=pygame.sprite.spritecollide(self.borders_sprite.sprite,self.guide_point_sprite,True,pygame.sprite.collide_mask)
     
     def set_key_input(self):
         key_input=pygame.key.get_pressed()
