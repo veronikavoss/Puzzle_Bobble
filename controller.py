@@ -26,6 +26,7 @@ class Controller:
         self.popup_round_board_timer_update=0
         self.game_over_timer_update=0
         self.game_over_countdown=0
+        self.restart=False
         self.cell_index=pygame.sprite.GroupSingle()
         self.visited=[]
         
@@ -33,6 +34,8 @@ class Controller:
         self.go_sound=False
         self.dead_sound_status=False
         self.clear_sound=False
+        self.continue_sound=False
+        self.game_over_sound=False
         
         self.font_type='all_font' # all_font, number, alphabet
     
@@ -54,6 +57,8 @@ class Controller:
         self.go_sound=False
         self.clear_sound=False
         self.dead_sound_status=False
+        self.continue_sound=False
+        self.game_over_sound=False
         self.launcher_sprite.game_status='ready'
         self.popup_round_board_timer()
         
@@ -279,18 +284,19 @@ class Controller:
             self.game_over_timer_update=pygame.time.get_ticks()
             self.game_over=True
     
-    def set_game_over(self):
+    def set_continue(self):
         if self.launcher_sprite.game_status=='dead':
             self.game_over_timer()
-            if self.current_time-self.game_over_timer_update>=3000:
+            if self.current_time-self.game_over_timer_update>=2000:
                 self.playing_game=False
                 self.game_over=False
+                self.launcher_sprite.game_status='continue'
     
-    def draw_game_over(self):
+    def draw_continue(self):
         self.game_over_timer()
-        self.game_over_countdown=20-((self.current_time-self.game_over_timer_update)//1000)
-        game_over_text=list('PUSH_START_BUTTON_TO_CONTINUE'),list(f'TIMER_{self.game_over_countdown:0>2}')
-        for x,text in enumerate(game_over_text[0]):
+        self.game_over_countdown=10-((self.current_time-self.game_over_timer_update)//1000)
+        continue_text=list('PUSH_START_BUTTON_TO_CONTINUE'),list(f'TIMER_{self.game_over_countdown:0>2}')
+        for x,text in enumerate(continue_text[0]):
             if text!='_':
                 font_index=ord(text)-33
                 font_org=self.asset.font_images[self.font_type][font_index]
@@ -302,7 +308,7 @@ class Controller:
                 x=x*GRID_CELL_SIZE+(GRID_CELL_SIZE*5)
                 y=GRID_CELL_SIZE*14
                 self.screen.blit(font_copy,(x,y))
-        for x,text in enumerate(game_over_text[1]):
+        for x,text in enumerate(continue_text[1]):
             if text!='_':
                 font_index=ord(text)-33
                 font_org=self.asset.font_images[self.font_type][font_index]
@@ -315,15 +321,26 @@ class Controller:
                 y=GRID_CELL_SIZE*16
                 self.screen.blit(font_copy,(x,y))
     
-    def check_index(self):
-        mouse_pos=pygame.mouse.get_pos()
-        if self.launcher_sprite.load_bubble.sprite.rect.collidepoint(mouse_pos):
-            print(self.launcher_sprite.load_bubble.sprite.load,self.launcher_sprite.load_bubble.sprite.launched)
-        for bubble in self.launcher_sprite.bubble_sprite:
-            for cell in self.launcher_sprite.bubble_cells:
-                if cell.rect.collidepoint(mouse_pos):
-                    # print(bubble.rect,bubble.color,bubble.load,bubble.index)
-                    print(cell.rect,cell.index)
+    def set_game_over(self):
+        if self.game_over_countdown<0:
+            self.launcher_sprite.game_status='game_over'
+            self.game_over=False
+            self.game_over_countdown=0
+        if self.launcher_sprite.game_status=='game_over':
+            self.game_over_timer()
+            if self.current_time-self.game_over_timer_update>=7000:
+                self.asset.game_over_sound.stop()
+                self.restart=True
+        
+    def draw_game_over(self):
+        game_over_text=list('GAME_OVER')
+        for x,text in enumerate(game_over_text):
+            if text!='_':
+                font_index=ord(text)-55
+                font=self.asset.green_font_images['all_font'][font_index]
+                x=x*(16*SCALE)+(GRID_CELL_SIZE*11)
+                y=GRID_CELL_SIZE*12
+                self.screen.blit(font,(x,y))
     
     def draw_background(self):
         level=min(self.level//3,9)
@@ -377,7 +394,7 @@ class Controller:
     
     def draw_round_clear_text(self):
         if self.launcher_sprite.game_status=='clear':
-            clear_round_text=[list('ROUND_CLEAR'),list(f'{self.play_time:_>2}_SEC'),list(f'{self.time_bonus_score:_>5}_PTS'),list('NO_BONUS')]
+            clear_round_text=list('ROUND_CLEAR'),list(f'{self.play_time:_>2}_SEC'),list(f'{self.time_bonus_score:_>5}_PTS'),list('NO_BONUS')
             # round clear
             if (self.current_time-self.popup_round_board_timer_update)//100<20:
                 for column,text in enumerate(clear_round_text[0]):
@@ -434,6 +451,24 @@ class Controller:
             self.asset.pop_sound.stop()
             self.asset.round_clear_sound.play()
             self.clear_sound=True
+        elif self.launcher_sprite.game_status=='continue' and not self.continue_sound:
+            self.asset.round_clear_sound.stop()
+            self.asset.continue_sound.play()
+            self.continue_sound=True
+        elif self.launcher_sprite.game_status=='game_over' and not self.game_over_sound:
+            self.asset.continue_sound.stop()
+            self.asset.game_over_sound.play()
+            self.game_over_sound=True
+    
+    def check_index(self):
+        mouse_pos=pygame.mouse.get_pos()
+        if self.launcher_sprite.load_bubble.sprite.rect.collidepoint(mouse_pos):
+            print(self.launcher_sprite.load_bubble.sprite.load,self.launcher_sprite.load_bubble.sprite.launched)
+        for bubble in self.launcher_sprite.bubble_sprite:
+            for cell in self.launcher_sprite.bubble_cells:
+                if cell.rect.collidepoint(mouse_pos):
+                    # print(bubble.rect,bubble.color,bubble.load,bubble.index)
+                    print(cell.rect,cell.index)
     
     def update(self):
         self.current_time=pygame.time.get_ticks()
@@ -453,9 +488,13 @@ class Controller:
             self.play_sounds()
             self.check_index()
             self.drop_bonus_score.update()
+            self.set_continue()
+        elif not self.start_screen and not self.playing_game:
             self.set_game_over()
+            self.play_sounds()
     
     def draw(self):
+        print(self.game_over_timer_update)
         if self.start_screen:
             self.start_screen_sprite.draw()
             self.draw_bottom_text()
@@ -472,8 +511,7 @@ class Controller:
                 self.drop_bonus_score.sprite.draw(self.screen)
         elif not self.start_screen and not self.playing_game:
             self.screen.fill((0,0,0))
-            self.draw_game_over()
-        # else:
-        #     self.screen.fill('black')
-        #     self.draw_text()
-        print(self.playing_game,self.game_over)
+            if self.launcher_sprite.game_status=='continue':
+                self.draw_continue()
+            elif self.launcher_sprite.game_status=='game_over':
+                self.draw_game_over()

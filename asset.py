@@ -284,6 +284,8 @@ class Asset:
                 self.bubbles_dead_image.append(surface)
     
     def get_sound(self):
+        self.start_screen_sound=pygame.mixer.Sound(os.path.join(SOUND_PATH,'Title Demonstration.ogg'))
+        self.start_screen_sound.set_volume(MUSIC_VOLUME-0.7)
         pygame.mixer.music.load(os.path.join(SOUND_PATH,'SinglePlayerMusic.ogg'))
         pygame.mixer.music.set_volume(MUSIC_VOLUME-0.7)
         self.ready_sound=pygame.mixer.Sound(os.path.join(SOUND_PATH,'ready.wav'))
@@ -308,3 +310,5 @@ class Asset:
         self.dead_voice_sound.set_volume(SFX_VOLUME-0.7)
         self.game_over_sound=pygame.mixer.Sound(os.path.join(SOUND_PATH,'Game_Over.ogg'))
         self.game_over_sound.set_volume(SFX_VOLUME-0.7)
+        self.continue_sound=pygame.mixer.Sound(os.path.join(SOUND_PATH,'Continue.ogg'))
+        self.continue_sound.set_volume(MUSIC_VOLUME-0.7)
