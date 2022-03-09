@@ -469,6 +469,8 @@ class Controller:
                 if cell.rect.collidepoint(mouse_pos):
                     # print(bubble.rect,bubble.color,bubble.load,bubble.index)
                     print(cell.rect,cell.index)
+        if pygame.sprite.groupcollide(self.launcher_sprite.bubble_cells,self.launcher_sprite.bubble_cells,False,False,pygame.sprite.collide_mask):
+            print(1)
     
     def update(self):
         self.current_time=pygame.time.get_ticks()
@@ -494,7 +496,6 @@ class Controller:
             self.play_sounds()
     
     def draw(self):
-        print(self.game_over_timer_update)
         if self.start_screen:
             self.start_screen_sprite.draw()
             self.draw_bottom_text()

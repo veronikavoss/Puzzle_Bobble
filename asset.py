@@ -286,6 +286,8 @@ class Asset:
     def get_sound(self):
         self.start_screen_sound=pygame.mixer.Sound(os.path.join(SOUND_PATH,'Title Demonstration.ogg'))
         self.start_screen_sound.set_volume(MUSIC_VOLUME-0.7)
+        self.start_button_sound=pygame.mixer.Sound(os.path.join(SOUND_PATH,'StartButton.wav'))
+        self.start_button_sound.set_volume(MUSIC_VOLUME-0.7)
         pygame.mixer.music.load(os.path.join(SOUND_PATH,'SinglePlayerMusic.ogg'))
         pygame.mixer.music.set_volume(MUSIC_VOLUME-0.7)
         self.ready_sound=pygame.mixer.Sound(os.path.join(SOUND_PATH,'ready.wav'))

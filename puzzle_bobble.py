@@ -20,11 +20,11 @@ class PuzzleBobble:
     
     def loop(self):
         while self.running:
-            self.clock.tick(FPS)
             self.event()
             self.update()
             self.draw()       
             pygame.display.update()
+            self.clock.tick(FPS)
     
     def event(self):
         for event in pygame.event.get():
@@ -36,13 +36,17 @@ class PuzzleBobble:
                     self.controller.level+=1
                 if self.controller.start_screen:
                     if event.key==pygame.K_SPACE or not event.key==pygame.K_RETURN:
+                        self.asset.start_screen_sound.stop()
+                        self.asset.start_button_sound.play()
+                        pygame.time.delay(1000)
                         self.controller.start_screen=False
                         self.controller.playing_game=True
-                        self.asset.start_screen_sound.stop()
                         self.controller.round_start()
                 elif not self.controller.start_screen and not self.controller.playing_game:
                     if event.key==pygame.K_SPACE or not event.key==pygame.K_RETURN:
                         self.asset.continue_sound.stop()
+                        self.asset.start_button_sound.play()
+                        pygame.time.delay(1000)
                         self.controller.level-=1
                         self.controller.playing_game=True
                         self.controller.game_over=False
